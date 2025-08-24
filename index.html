@@ -657,10 +657,30 @@
             border: 1px solid #b8daff;
             color: #0c5460;
         }
+
+        .debug-info {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.8em;
+            z-index: 1000;
+            max-width: 300px;
+        }
     </style>
 </head>
 <body>
     <button class="admin-toggle" onclick="showAdminLogin()">🔐 Admin Login</button>
+
+    <!-- Debug Info -->
+    <div id="debugInfo" class="debug-info hidden">
+        <div>RSVPs: <span id="debugRSVPCount">0</span></div>
+        <div>Admin: <span id="debugAdminMode">false</span></div>
+        <div>Storage: <span id="debugStorageMethod">Memory</span></div>
+    </div>
 
     <!-- Admin Login Modal -->
     <div id="adminLoginModal" class="modal hidden">
@@ -689,7 +709,10 @@
         <div class="admin-dashboard hidden" id="adminDashboard">
             <div class="admin-header">
                 <h2>🔧 Admin Dashboard</h2>
-                <button class="logout-btn" onclick="logoutAdmin()">🚪 Logout</button>
+                <div>
+                    <button onclick="toggleDebug()" style="background: rgba(255,255,255,0.2); color: white; border: none; padding: 5px 10px; border-radius: 15px; margin-right: 10px; cursor: pointer; font-size: 0.8em;">🐛 Debug</button>
+                    <button class="logout-btn" onclick="logoutAdmin()">🚪 Logout</button>
+                </div>
             </div>
 
             <div class="admin-tabs">
@@ -705,7 +728,7 @@
                 <div class="logo-upload-section">
                     <label class="control-label">🖼️ Logo Management:</label>
                     <div class="alert alert-info">
-                        <strong>Note:</strong> Your logo will be saved permanently and persist even after page refresh or redeployment.
+                        <strong>Note:</strong> Logo is stored in memory during this session only.
                     </div>
                     <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px;">
                         <input type="file" id="logoUpload" accept="image/*" style="display: none;" onchange="handleLogoUpload(event)">
@@ -937,96 +960,55 @@
     </div>
 
     <script>
-        // Global variables
+        // Global variables - Using in-memory storage for Claude.ai compatibility
         let adminMode = false;
         let currentLogo = 'simple';
         let adminPassword = 'admin123';
         let rsvpSubmissions = [];
-
-        // Storage keys
-        const STORAGE_KEYS = {
-            EVENT_DATA: 'muna_event_data',
-            ADMIN_PASSWORD: 'muna_admin_password',
-            LOGO_DATA: 'muna_logo_data',
-            RSVP_DATA: 'muna_rsvp_data'
-        };
-
-        // Initialize event data
-        const DEFAULT_EVENT_DATA = {
-            programName: 'Education Session',
+        let currentEventData = {
+            programName: 'Education Session & Community Gathering',
             eventDate: 'Sunday, September 14, 2025',
-            timeSlot: '10:00 AM - 02:00 PM',
+            timeSlot: '10:00 AM - 6:00 PM',
             eventPlace: 'Masjid Salman Al Farshi Mosque',
             organizedBy: 'MUNA Georgia Chapter'
         };
-
-        // Storage utility functions
-        function saveToStorage(key, data) {
-            try {
-                const storageData = JSON.stringify(data);
-                // Store in multiple storage mechanisms for maximum persistence
-                if (typeof(Storage) !== "undefined") {
-                    localStorage.setItem(key, storageData);
-                }
-                // Also store in a global variable as fallback
-                window['stored_' + key] = data;
-                console.log(`Data saved to storage: ${key}`);
-            } catch (e) {
-                console.error('Storage error:', e);
-                // Fallback to global variables
-                window['stored_' + key] = data;
-            }
-        }
-
-        function loadFromStorage(key, defaultValue = null) {
-            try {
-                // Try localStorage first
-                if (typeof(Storage) !== "undefined") {
-                    const stored = localStorage.getItem(key);
-                    if (stored) {
-                        const parsed = JSON.parse(stored);
-                        console.log(`Data loaded from storage: ${key}`);
-                        return parsed;
-                    }
-                }
-
-                // Fallback to global variables
-                if (window['stored_' + key]) {
-                    console.log(`Data loaded from fallback: ${key}`);
-                    return window['stored_' + key];
-                }
-
-                console.log(`Using default value for: ${key}`);
-                return defaultValue;
-            } catch (e) {
-                console.error('Storage load error:', e);
-                return defaultValue;
-            }
-        }
+        let logoData = null;
+        let debugMode = false;
 
         // Initialize all data on page load
         function initializeData() {
-            // Load event data
-            const eventData = loadFromStorage(STORAGE_KEYS.EVENT_DATA, DEFAULT_EVENT_DATA);
-            window.currentEventData = eventData;
-
-            // Load admin password
-            adminPassword = loadFromStorage(STORAGE_KEYS.ADMIN_PASSWORD, 'admin123');
-
-            // Load RSVP data
-            rsvpSubmissions = loadFromStorage(STORAGE_KEYS.RSVP_DATA, []);
-
-            // Load and apply logo
-            loadAndApplyLogo();
-
-            // Update displays
+            console.log('Initializing MUNA RSVP Form with in-memory storage...');
+            
+            // Initialize displays
             updateEventDisplay();
+            loadAndApplyLogo();
+            updateDebugInfo();
+            
+            console.log('Initialization complete');
+        }
+
+        // Debug functions
+        function toggleDebug() {
+            debugMode = !debugMode;
+            const debugInfo = document.getElementById('debugInfo');
+            if (debugMode) {
+                debugInfo.classList.remove('hidden');
+                updateDebugInfo();
+            } else {
+                debugInfo.classList.add('hidden');
+            }
+        }
+
+        function updateDebugInfo() {
+            if (!debugMode) return;
+            
+            document.getElementById('debugRSVPCount').textContent = rsvpSubmissions.length;
+            document.getElementById('debugAdminMode').textContent = adminMode;
+            document.getElementById('debugStorageMethod').textContent = 'In-Memory';
         }
 
         // Logo management functions
         function loadAndApplyLogo() {
-            const logoData = loadFromStorage(STORAGE_KEYS.LOGO_DATA, null);
-
             if (logoData && logoData.type === 'custom' && logoData.data) {
                 // Apply custom logo
                 const customLogo = document.getElementById('customLogo');
@@ -1045,7 +1027,6 @@
                     logoStatus.style.color = '#4caf50';
                 }
 
-                // Update preview
                 updateLogoPreview(logoData.data);
             } else {
                 // Use simple logo
@@ -1063,7 +1044,6 @@
                     logoStatus.style.color = '#666';
                 }
 
-                // Update preview
                 updateLogoPreview(null);
             }
         }
@@ -1096,58 +1076,41 @@
 
             const reader = new FileReader();
             reader.onload = function(e) {
-                const logoData = {
+                logoData = {
                     type: 'custom',
                     data: e.target.result,
                     filename: file.name,
                     uploadDate: new Date().toISOString()
                 };
 
-                // Save to persistent storage
-                saveToStorage(STORAGE_KEYS.LOGO_DATA, logoData);
-
-                // Apply the logo
                 loadAndApplyLogo();
-
-                showNotification('✅ Logo uploaded and saved permanently!', 'success');
+                showNotification('✅ Logo uploaded successfully!', 'success');
+                console.log('Logo uploaded:', file.name);
             };
             reader.readAsDataURL(file);
         }
 
         function resetToSimpleLogo() {
-            // Clear logo data from storage
-            try {
-                if (typeof(Storage) !== "undefined") {
-                    localStorage.removeItem(STORAGE_KEYS.LOGO_DATA);
-                }
-                if (window['stored_' + STORAGE_KEYS.LOGO_DATA]) {
-                    delete window['stored_' + STORAGE_KEYS.LOGO_DATA];
-                }
-            } catch (e) {
-                console.error('Error clearing logo data:', e);
-            }
-
+            logoData = null;
+            
             // Clear file input
             const logoUpload = document.getElementById('logoUpload');
             if (logoUpload) {
                 logoUpload.value = '';
             }
 
-            // Apply simple logo
             loadAndApplyLogo();
-
             showNotification('Logo reset to simple MUNA logo', 'success');
+            console.log('Logo reset to simple');
         }
 
         // Event data functions
         function updateEventDisplay() {
-            if (window.currentEventData) {
-                document.getElementById('displayProgramName').textContent = window.currentEventData.programName;
-                document.getElementById('displayDate').textContent = window.currentEventData.eventDate;
-                document.getElementById('displayTime').textContent = window.currentEventData.timeSlot;
-                document.getElementById('displayPlace').textContent = window.currentEventData.eventPlace;
-                document.getElementById('displayOrganizer').textContent = window.currentEventData.organizedBy;
-            }
+            document.getElementById('displayProgramName').textContent = currentEventData.programName;
+            document.getElementById('displayDate').textContent = currentEventData.eventDate;
+            document.getElementById('displayTime').textContent = currentEventData.timeSlot;
+            document.getElementById('displayPlace').textContent = currentEventData.eventPlace;
+            document.getElementById('displayOrganizer').textContent = currentEventData.organizedBy;
         }
 
         function updateEventInfo() {
@@ -1163,8 +1126,8 @@
                 return;
             }
 
-            // Create event data object
-            const eventData = {
+            // Update event data object
+            currentEventData = {
                 programName,
                 eventDate,
                 timeSlot,
@@ -1173,14 +1136,11 @@
                 lastUpdated: new Date().toISOString()
             };
 
-            // Save to persistent storage
-            saveToStorage(STORAGE_KEYS.EVENT_DATA, eventData);
-            window.currentEventData = eventData;
-
             // Update display
             updateEventDisplay();
 
-            showNotification('✅ Event information saved permanently!', 'success');
+            showNotification('✅ Event information updated!', 'success');
+            console.log('Event info updated:', currentEventData);
         }
 
         // Admin functions
@@ -1203,7 +1163,9 @@
                 showAdminDashboard();
                 updateStatistics();
                 displayRSVPList();
+                updateDebugInfo();
                 showNotification('Welcome to Admin Dashboard!', 'success');
+                console.log('Admin login successful');
             } else {
                 showNotification('Incorrect password. Please try again.', 'error');
                 document.getElementById('adminPassword').value = '';
@@ -1220,17 +1182,15 @@
 
             loadEventDataToAdmin();
             updatePasswordDisplay();
-            loadAndApplyLogo(); // Ensure logo is current
+            loadAndApplyLogo();
         }
 
         function loadEventDataToAdmin() {
-            if (window.currentEventData) {
-                document.getElementById('programName').value = window.currentEventData.programName || '';
-                document.getElementById('eventDate').value = window.currentEventData.eventDate || '';
-                document.getElementById('timeSlot').value = window.currentEventData.timeSlot || '';
-                document.getElementById('eventPlace').value = window.currentEventData.eventPlace || '';
-                document.getElementById('organizedBy').value = window.currentEventData.organizedBy || '';
-            }
+            document.getElementById('programName').value = currentEventData.programName || '';
+            document.getElementById('eventDate').value = currentEventData.eventDate || '';
+            document.getElementById('timeSlot').value = currentEventData.timeSlot || '';
+            document.getElementById('eventPlace').value = currentEventData.eventPlace || '';
+            document.getElementById('organizedBy').value = currentEventData.organizedBy || '';
         }
 
         function updatePasswordDisplay() {
@@ -1247,7 +1207,9 @@
             toggleBtn.textContent = '🔐 Admin Login';
             toggleBtn.style.background = '#1e3c72';
             toggleBtn.onclick = showAdminLogin;
+            updateDebugInfo();
             showNotification('Logged out successfully', 'success');
+            console.log('Admin logout');
         }
 
         function changeAdminPassword() {
@@ -1276,13 +1238,11 @@
             adminPassword = newPassword;
             newPasswordField.value = '';
 
-            // Save to persistent storage
-            saveToStorage(STORAGE_KEYS.ADMIN_PASSWORD, adminPassword);
-
             // Update the display
             updatePasswordDisplay();
 
-            showNotification('✅ Admin password updated and saved permanently!', 'success');
+            showNotification('✅ Admin password updated!', 'success');
+            console.log('Admin password changed');
         }
 
         // Tab management
@@ -1308,6 +1268,7 @@
         // RSVP management functions
         function displayRSVPList() {
             const container = document.getElementById('rsvpTableContainer');
+            console.log('Displaying RSVP list, count:', rsvpSubmissions.length);
 
             if (rsvpSubmissions.length === 0) {
                 container.innerHTML = `
@@ -1339,7 +1300,9 @@
             rsvpSubmissions.forEach((rsvp, index) => {
                 const attendingClass = rsvp.attending === 'inshallah_yes' ? 'attending-yes' : 'attending-no';
                 const attendingText = rsvp.attending === 'inshallah_yes' ? 'Yes, In Sha Allah' : 'Cannot Attend';
-                const totalPeople = parseInt(rsvp.headCount || 0) + parseInt(rsvp.kidsCount || 0);
+                const adultsCount = parseInt(rsvp.headCount || 0);
+                const kidsCount = parseInt(rsvp.kidsCount || 0);
+                const totalPeople = adultsCount + kidsCount;
 
                 tableHTML += `
                     <tr>
@@ -1354,7 +1317,7 @@
                     </tr>
                 `;
 
-                if (rsvp.comments) {
+                if (rsvp.comments && rsvp.comments.trim()) {
                     tableHTML += `
                         <tr class="comment-row">
                             <td colspan="8" style="font-style:italic;color:#666;padding-left:20px;">💬 ${rsvp.comments}</td>
@@ -1373,20 +1336,22 @@
 
         function deleteRSVP(index) {
             if (confirm('Are you sure you want to delete this RSVP?')) {
+                console.log('Deleting RSVP at index:', index);
                 rsvpSubmissions.splice(index, 1);
-                saveToStorage(STORAGE_KEYS.RSVP_DATA, rsvpSubmissions);
                 displayRSVPList();
                 updateStatistics();
+                updateDebugInfo();
                 showNotification('RSVP deleted successfully');
             }
         }
 
         function clearAllRSVPs() {
             if (confirm('Are you sure you want to clear ALL RSVP submissions? This cannot be undone.')) {
+                console.log('Clearing all RSVPs, previous count:', rsvpSubmissions.length);
                 rsvpSubmissions = [];
-                saveToStorage(STORAGE_KEYS.RSVP_DATA, rsvpSubmissions);
                 displayRSVPList();
                 updateStatistics();
+                updateDebugInfo();
                 showNotification('All RSVPs cleared');
             }
         }
@@ -1400,7 +1365,9 @@
             let csv = 'First Name,Last Name,Sub-Chapter,Attending,Adults,Children,Total People,Comments,Submitted At\n';
 
             rsvpSubmissions.forEach(rsvp => {
-                const totalPeople = parseInt(rsvp.headCount || 0) + parseInt(rsvp.kidsCount || 0);
+                const adultsCount = parseInt(rsvp.headCount || 0);
+                const kidsCount = parseInt(rsvp.kidsCount || 0);
+                const totalPeople = adultsCount + kidsCount;
                 const attendingText = rsvp.attending === 'inshallah_yes' ? 'Yes In Sha Allah' : 'Cannot Attend';
                 csv += `"${rsvp.firstName}","${rsvp.lastName}","${rsvp.subChapter || ''}","${attendingText}","${rsvp.headCount}","${rsvp.kidsCount}","${totalPeople}","${rsvp.comments || ''}","${rsvp.submittedAt}"\n`;
             });
@@ -1418,9 +1385,14 @@
 
         // Statistics
         function updateStatistics() {
+            console.log('Updating statistics, RSVP count:', rsvpSubmissions.length);
+            
             const totalRSVPs = rsvpSubmissions.length;
-            const attendingCount = rsvpSubmissions.filter(r => r.attending === 'inshallah_yes').length;
-            const notAttendingCount = rsvpSubmissions.filter(r => r.attending === 'no').length;
+            const attendingRSVPs = rsvpSubmissions.filter(r => r.attending === 'inshallah_yes');
+            const notAttendingRSVPs = rsvpSubmissions.filter(r => r.attending === 'no');
+            
+            const attendingCount = attendingRSVPs.length;
+            const notAttendingCount = notAttendingRSVPs.length;
 
             let totalAdults = 0;
             let totalKids = 0;
@@ -1428,8 +1400,13 @@
 
             rsvpSubmissions.forEach(rsvp => {
                 if (rsvp.attending === 'inshallah_yes') {
-                    totalAdults += parseInt(rsvp.headCount || 0);
-                    totalKids += parseInt(rsvp.kidsCount || 0);
+                    const adults = parseInt(rsvp.headCount || 0);
+                    const kids = parseInt(rsvp.kidsCount || 0);
+                    
+                    totalAdults += adults;
+                    totalKids += kids;
+                    
+                    console.log(`RSVP ${rsvp.firstName}: ${adults} adults, ${kids} kids`);
                 }
 
                 const chapter = rsvp.subChapter || 'Not specified';
@@ -1438,6 +1415,9 @@
 
             const totalPeople = totalAdults + totalKids;
 
+            console.log(`Statistics: Total RSVPs: ${totalRSVPs}, Attending: ${attendingCount}, Adults: ${totalAdults}, Kids: ${totalKids}, Total People: ${totalPeople}`);
+
+            // Update DOM elements
             document.getElementById('totalRSVPs').textContent = totalRSVPs;
             document.getElementById('attendingCount').textContent = attendingCount;
             document.getElementById('notAttendingCount').textContent = notAttendingCount;
@@ -1445,6 +1425,7 @@
             document.getElementById('totalKids').textContent = totalKids;
             document.getElementById('totalPeople').textContent = totalPeople;
 
+            // Update chapter breakdown
             const chapterStats = document.getElementById('chapterStats');
             if (Object.keys(chapterCounts).length === 0) {
                 chapterStats.innerHTML = '<p>No data available yet</p>';
@@ -1460,9 +1441,9 @@
         // Data management functions
         function exportAllData() {
             const allData = {
-                eventData: window.currentEventData,
+                eventData: currentEventData,
                 rsvpData: rsvpSubmissions,
-                logoData: loadFromStorage(STORAGE_KEYS.LOGO_DATA, null),
+                logoData: logoData,
                 adminPassword: adminPassword,
                 exportDate: new Date().toISOString(),
                 version: '1.0'
@@ -1501,8 +1482,7 @@
                     if (confirm('This will replace all current data. Are you sure you want to continue?')) {
                         // Import event data
                         if (importedData.eventData) {
-                            window.currentEventData = importedData.eventData;
-                            saveToStorage(STORAGE_KEYS.EVENT_DATA, importedData.eventData);
+                            currentEventData = importedData.eventData;
                             updateEventDisplay();
                             loadEventDataToAdmin();
                         }
@@ -1510,24 +1490,23 @@
                         // Import RSVP data
                         if (importedData.rsvpData) {
                             rsvpSubmissions = importedData.rsvpData;
-                            saveToStorage(STORAGE_KEYS.RSVP_DATA, importedData.rsvpData);
                         }
 
                         // Import logo data
                         if (importedData.logoData) {
-                            saveToStorage(STORAGE_KEYS.LOGO_DATA, importedData.logoData);
+                            logoData = importedData.logoData;
                             loadAndApplyLogo();
                         }
 
                         // Import admin password
                         if (importedData.adminPassword) {
                             adminPassword = importedData.adminPassword;
-                            saveToStorage(STORAGE_KEYS.ADMIN_PASSWORD, importedData.adminPassword);
                             updatePasswordDisplay();
                         }
 
                         displayRSVPList();
                         updateStatistics();
+                        updateDebugInfo();
                         showNotification('✅ All data imported successfully!');
                     }
                 } catch (error) {
@@ -1536,26 +1515,25 @@
                 }
             };
             reader.readAsText(file);
-            event.target.value = ''; // Reset file input
+            event.target.value = '';
         }
 
         function resetAllData() {
             if (confirm('⚠️ This will delete ALL data including events, RSVPs, logo, and reset password. Are you absolutely sure?')) {
                 if (confirm('This action cannot be undone. Click OK to proceed.')) {
-                    // Clear all storage
-                    Object.values(STORAGE_KEYS).forEach(key => {
-                        try {
-                            localStorage.removeItem(key);
-                            delete window['stored_' + key];
-                        } catch (e) {
-                            console.error('Error clearing:', key, e);
-                        }
-                    });
-
+                    console.log('Resetting all data to defaults');
+                    
                     // Reset to defaults
-                    window.currentEventData = DEFAULT_EVENT_DATA;
+                    currentEventData = {
+                        programName: 'Education Session & Community Gathering',
+                        eventDate: 'Sunday, September 14, 2025',
+                        timeSlot: '10:00 AM - 6:00 PM',
+                        eventPlace: 'Masjid Salman Al Farshi Mosque',
+                        organizedBy: 'MUNA Georgia Chapter'
+                    };
                     adminPassword = 'admin123';
                     rsvpSubmissions = [];
+                    logoData = null;
                     currentLogo = 'simple';
 
                     // Update displays
@@ -1565,6 +1543,7 @@
                     loadAndApplyLogo();
                     displayRSVPList();
                     updateStatistics();
+                    updateDebugInfo();
 
                     showNotification('⚠️ All data has been reset to defaults');
                 }
@@ -1605,12 +1584,15 @@
 
         // Event Listeners
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing...');
+            
             // Initialize all data
             initializeData();
 
             // Handle form submission
             document.getElementById('rsvpForm').addEventListener('submit', function(e) {
                 e.preventDefault();
+                console.log('Form submitted');
 
                 const formData = new FormData(this);
                 const data = {};
@@ -1620,36 +1602,43 @@
                 }
 
                 data.submittedAt = new Date().toLocaleString();
+                data.id = Date.now(); // Add unique ID
+                
+                console.log('New RSVP data:', data);
+                
                 rsvpSubmissions.push(data);
+                console.log('Total RSVPs after submission:', rsvpSubmissions.length);
 
-                // Save to persistent storage
-                saveToStorage(STORAGE_KEYS.RSVP_DATA, rsvpSubmissions);
-
+                // Show success message
                 document.getElementById('successMessage').style.display = 'block';
                 document.getElementById('successMessage').scrollIntoView({
                     behavior: 'smooth',
                     block: 'center'
                 });
 
+                // Reset form after delay
                 setTimeout(() => {
                     this.reset();
                     document.getElementById('successMessage').style.display = 'none';
                 }, 3000);
 
+                // Update admin dashboard if active
                 if (adminMode) {
                     updateStatistics();
                     displayRSVPList();
                 }
+
+                updateDebugInfo();
+                showNotification('RSVP submitted successfully!');
             });
 
-            // Keyboard shortcuts for admin login
+            // Keyboard shortcuts
             document.getElementById('adminPassword').addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     verifyAdminPassword();
                 }
             });
 
-            // Keyboard shortcut for new password field
             document.getElementById('newAdminPassword').addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     changeAdminPassword();
@@ -1663,30 +1652,100 @@
                 }
             });
 
-            // Auto-save event info on blur (optional enhancement)
-            document.querySelectorAll('.editable-field').forEach(field => {
-                field.addEventListener('blur', function() {
-                    // Optional: Auto-save on blur
-                    // updateEventInfo();
+            console.log('MUNA RSVP Form initialized with in-memory storage');
+        });
+
+        // Additional utility functions for better user experience
+        function handleFormValidation() {
+            const form = document.getElementById('rsvpForm');
+            const inputs = form.querySelectorAll('input[required], select[required]');
+            
+            inputs.forEach(input => {
+                input.addEventListener('blur', function() {
+                    if (!this.value.trim()) {
+                        this.style.borderColor = '#e74c3c';
+                    } else {
+                        this.style.borderColor = '#e0e0e0';
+                    }
+                });
+
+                input.addEventListener('input', function() {
+                    if (this.value.trim()) {
+                        this.style.borderColor = '#4caf50';
+                    }
+                });
+            });
+        }
+
+        // Initialize form validation when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            handleFormValidation();
+        });
+
+        // Add some visual feedback for form interactions
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add hover effects to buttons
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(button => {
+                button.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-1px)';
+                });
+                
+                button.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
                 });
             });
 
-            console.log('MUNA RSVP Form initialized with persistent storage');
+            // Add focus effects to form inputs
+            const formInputs = document.querySelectorAll('.form-input, .form-select, .editable-field');
+            formInputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.style.transform = 'scale(1.02)';
+                });
+                
+                input.addEventListener('blur', function() {
+                    this.style.transform = 'scale(1)';
+                });
+            });
         });
 
-        // Save data periodically (safety backup)
-        setInterval(function() {
-            if (rsvpSubmissions.length > 0) {
-                saveToStorage(STORAGE_KEYS.RSVP_DATA, rsvpSubmissions);
+        // Test function to add sample data (for testing purposes)
+        function addSampleRSVP() {
+            if (!adminMode) {
+                showNotification('Admin access required', 'error');
+                return;
             }
-        }, 30000); // Save every 30 seconds
 
-        // Handle page unload - save any unsaved data
-        window.addEventListener('beforeunload', function() {
-            // Final save before page closes
-            saveToStorage(STORAGE_KEYS.RSVP_DATA, rsvpSubmissions);
-            saveToStorage(STORAGE_KEYS.EVENT_DATA, window.currentEventData);
+            const sampleRSVP = {
+                firstName: 'Ahmed',
+                lastName: 'Hassan',
+                subChapter: 'Norcross Male Sub-Chapter',
+                attending: 'inshallah_yes',
+                headCount: '2',
+                kidsCount: '1',
+                comments: 'Looking forward to the event!',
+                submittedAt: new Date().toLocaleString(),
+                id: Date.now()
+            };
+
+            rsvpSubmissions.push(sampleRSVP);
+            console.log('Sample RSVP added:', sampleRSVP);
+            
+            updateStatistics();
+            displayRSVPList();
+            updateDebugInfo();
+            showNotification('Sample RSVP added for testing');
+        }
+
+        // Add keyboard shortcut for sample data (Ctrl+Shift+S)
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.shiftKey && e.key === 'S' && adminMode) {
+                e.preventDefault();
+                addSampleRSVP();
+            }
         });
+
+        console.log('MUNA RSVP Form script loaded successfully');
     </script>
 </body>
 </html>
