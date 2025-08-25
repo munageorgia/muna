@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>RSVP</title>
+  <title>RSVP System</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -128,6 +128,14 @@
       background-color: #007bff;
       color: white;
     }
+    .session-info {
+      background: #d1ecf1;
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 15px;
+      font-size: 14px;
+      border: 1px solid #bee5eb;
+    }
   </style>
 </head>
 <body>
@@ -202,9 +210,19 @@
 
       <div id="adminTab" class="tab-content" style="display: none;">
         <h2>Admin Login</h2>
+        <div class="session-info">
+          <strong>Session Management:</strong> Your admin session will persist even after page reloads. 
+          You can safely refresh the page or navigate back to the admin dashboard.
+        </div>
         <form id="adminLoginForm">
           <div class="form-group">
             <input type="password" id="adminPassword" placeholder="Admin Password" required>
+          </div>
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="rememberSession" checked> 
+              Keep me logged in during this browser session
+            </label>
           </div>
           <button type="submit">Login</button>
         </form>
@@ -216,7 +234,10 @@
     <div id="adminPage" class="page">
       <div class="admin-header">
         <h1>Admin Dashboard</h1>
-        <button class="danger-btn" onclick="logout()">Logout</button>
+        <div>
+          <span id="sessionStatus" style="margin-right: 15px; color: #28a745;"></span>
+          <button class="danger-btn" onclick="logout()">Logout</button>
+        </div>
       </div>
 
       <div class="tab-buttons">
@@ -262,13 +283,92 @@
     // Admin password - change this to your desired password
     const ADMIN_PASSWORD = "munaga0513";
 
+    // Session management using window.name (persists across page reloads)
+    const SESSION_KEY = 'rsvp_admin_session';
+
+    // Admin session state
+    let adminSession = {
+      isLoggedIn: false,
+      loginTime: null,
+      sessionDuration: 24 * 60 * 60 * 1000 // 24 hours in milliseconds
+    };
+
     // Event data stored in memory (you can enhance this to sync with Google Sheets)
     let eventData = {
-      title: "Education Session 2025",
+      title: "Second Education Session 2025",
       date: "14th September, Sunday",
-      venue: "TBA",
+      venue: "MSF, Address: 2187 Fellowship Rd, Tucker, GA 30084",
       organizer: "Event Committee"
     };
+
+    // Save session state to window.name
+    function saveSession() {
+      try {
+        const sessionData = {
+          session: adminSession,
+          eventData: eventData
+        };
+        window.name = JSON.stringify(sessionData);
+      } catch (e) {
+        console.warn('Could not save session data');
+      }
+    }
+
+    // Load session state from window.name
+    function loadSession() {
+      try {
+        if (window.name) {
+          const sessionData = JSON.parse(window.name);
+          if (sessionData.session) {
+            adminSession = sessionData.session;
+            
+            // Check if session has expired
+            if (adminSession.isLoggedIn && adminSession.loginTime) {
+              const now = new Date().getTime();
+              const sessionAge = now - adminSession.loginTime;
+              
+              if (sessionAge > adminSession.sessionDuration) {
+                // Session expired
+                adminSession.isLoggedIn = false;
+                adminSession.loginTime = null;
+                saveSession();
+              }
+            }
+          }
+          if (sessionData.eventData) {
+            eventData = sessionData.eventData;
+          }
+        }
+      } catch (e) {
+        console.warn('Could not load session data');
+        adminSession.isLoggedIn = false;
+      }
+    }
+
+    // Update session status display
+    function updateSessionStatus() {
+      const statusElement = document.getElementById('sessionStatus');
+      if (adminSession.isLoggedIn && adminSession.loginTime) {
+        const loginDate = new Date(adminSession.loginTime);
+        const timeStr = loginDate.toLocaleTimeString();
+        statusElement.textContent = `Logged in since ${timeStr}`;
+        statusElement.style.color = '#28a745';
+      } else {
+        statusElement.textContent = '';
+      }
+    }
+
+    // Check if admin should be automatically logged in
+    function checkAutoLogin() {
+      loadSession();
+      
+      if (adminSession.isLoggedIn) {
+        showPage('adminPage');
+        updateSessionStatus();
+        return true;
+      }
+      return false;
+    }
 
     // Tab switching for login page
     function showTab(tabName) {
@@ -309,11 +409,23 @@
     document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
       e.preventDefault();
       const password = document.getElementById('adminPassword').value;
+      const rememberSession = document.getElementById('rememberSession').checked;
       const resultDiv = document.getElementById('loginResult');
 
       if (password === ADMIN_PASSWORD) {
+        adminSession.isLoggedIn = true;
+        adminSession.loginTime = new Date().getTime();
+        
+        if (rememberSession) {
+          saveSession();
+        }
+        
         showPage('adminPage');
+        updateSessionStatus();
         resultDiv.innerHTML = '';
+        
+        // Clear password field
+        document.getElementById('adminPassword').value = '';
       } else {
         resultDiv.innerHTML = '<div class="error">Invalid password</div>';
       }
@@ -321,6 +433,12 @@
 
     // Logout
     function logout() {
+      adminSession.isLoggedIn = false;
+      adminSession.loginTime = null;
+      
+      // Clear session data
+      window.name = '';
+      
       showPage('loginPage');
       document.getElementById('adminPassword').value = '';
       document.getElementById('loginResult').innerHTML = '';
@@ -343,18 +461,26 @@
       eventData.venue = document.getElementById('settingsVenue').value;
       eventData.organizer = document.getElementById('settingsOrganizer').value;
 
-      // Update the display on user page
+      // Save updated data to session immediately
+      saveSession();
+
+      // Update the display on user page immediately
+      updateEventDisplay();
+
+      document.getElementById('settingsResult').innerHTML = '<div class="success">Event details updated successfully and will persist across page reloads!</div>';
+
+      setTimeout(() => {
+        document.getElementById('settingsResult').innerHTML = '';
+      }, 5000);
+    });
+
+    // Function to update event display
+    function updateEventDisplay() {
       document.getElementById('eventTitle').textContent = eventData.title;
       document.getElementById('eventDate').textContent = eventData.date;
       document.getElementById('eventVenue').textContent = eventData.venue;
       document.getElementById('eventOrganizer').textContent = eventData.organizer;
-
-      document.getElementById('settingsResult').innerHTML = '<div class="success">Event details updated successfully!</div>';
-
-      setTimeout(() => {
-        document.getElementById('settingsResult').innerHTML = '';
-      }, 3000);
-    });
+    }
 
     // Original RSVP form submission
     const form = document.getElementById('rsvpForm');
@@ -496,13 +622,48 @@
       document.getElementById('statsContainer').innerHTML = html;
     }
 
-    // Initialize with current event data
-    document.addEventListener('DOMContentLoaded', function() {
-      document.getElementById('eventTitle').textContent = eventData.title;
-      document.getElementById('eventDate').textContent = eventData.date;
-      document.getElementById('eventVenue').textContent = eventData.venue;
-      document.getElementById('eventOrganizer').textContent = eventData.organizer;
+    // Handle page visibility changes (when user comes back to the tab)
+    document.addEventListener('visibilitychange', function() {
+      if (!document.hidden && adminSession.isLoggedIn) {
+        updateSessionStatus();
+      }
     });
+
+    // Handle browser back/forward buttons
+    window.addEventListener('popstate', function(event) {
+      if (adminSession.isLoggedIn) {
+        showPage('adminPage');
+        updateSessionStatus();
+      }
+    });
+
+    // Initialize with current event data and check for existing session
+    document.addEventListener('DOMContentLoaded', function() {
+      // Load session and check for auto-login
+      if (!checkAutoLogin()) {
+        // No active session, load default event data
+        loadSession(); // This will load eventData if available
+      }
+      
+      // Always update UI with current event data (including any loaded from session)
+      updateEventDisplay();
+    });
+
+    // Periodic session validation (check every 5 minutes)
+    setInterval(function() {
+      if (adminSession.isLoggedIn && adminSession.loginTime) {
+        const now = new Date().getTime();
+        const sessionAge = now - adminSession.loginTime;
+        
+        if (sessionAge > adminSession.sessionDuration) {
+          // Session expired
+          logout();
+          alert('Your admin session has expired. Please log in again.');
+        } else {
+          updateSessionStatus();
+        }
+      }
+    }, 5 * 60 * 1000); // Check every 5 minutes
   </script>
 </body>
 </html>
