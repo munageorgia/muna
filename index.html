@@ -1,1751 +1,508 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MUNA - Event RSVP Form</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            animation: slideUp 0.8s ease-out;
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(50px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .header {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-            position: relative;
-        }
-
-        .muna-logo {
-            width: 100px;
-            height: 100px;
-            margin: 0 auto 20px;
-            position: relative;
-            overflow: hidden;
-            border-radius: 50%;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-        }
-
-        .logo-circle {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background: #f0f0f0;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .custom-logo {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
-            display: none;
-        }
-
-        .simple-logo {
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            font-weight: bold;
-            color: white;
-            letter-spacing: 2px;
-        }
-
-        .admin-toggle {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #1e3c72;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 0.9em;
-            z-index: 1000;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-
-        .admin-toggle:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            max-width: 400px;
-            width: 90%;
-            text-align: center;
-            animation: modalAppear 0.3s ease-out;
-        }
-
-        @keyframes modalAppear {
-            from { opacity: 0; transform: scale(0.8); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .cancel-btn, .save-btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.9em;
-        }
-
-        .cancel-btn {
-            background: #6c757d;
-            color: white;
-        }
-
-        .save-btn {
-            background: #1e3c72;
-            color: white;
-        }
-
-        .admin-dashboard {
-            background: rgba(30, 60, 114, 0.05);
-            border: 2px solid rgba(30, 60, 114, 0.1);
-            border-radius: 15px;
-            margin: 20px;
-            overflow: hidden;
-        }
-
-        .admin-header {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            color: white;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logout-btn {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .logout-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        .admin-tabs {
-            display: flex;
-            background: white;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 15px;
-            border: none;
-            background: white;
-            cursor: pointer;
-            font-weight: 600;
-            color: #666;
-            transition: all 0.3s ease;
-        }
-
-        .tab-btn.active {
-            color: #1e3c72;
-            background: rgba(30, 60, 114, 0.1);
-            border-bottom: 3px solid #1e3c72;
-        }
-
-        .tab-btn:hover {
-            background: rgba(30, 60, 114, 0.05);
-        }
-
-        .tab-content {
-            padding: 30px;
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .rsvp-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .rsvp-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .export-btn, .clear-btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.9em;
-            transition: all 0.3s ease;
-        }
-
-        .export-btn {
-            background: #28a745;
-            color: white;
-        }
-
-        .clear-btn {
-            background: #dc3545;
-            color: white;
-        }
-
-        .export-btn:hover {
-            background: #218838;
-        }
-
-        .clear-btn:hover {
-            background: #c82333;
-        }
-
-        .rsvp-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .rsvp-table th,
-        .rsvp-table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        .rsvp-table th {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            color: white;
-            font-weight: 600;
-        }
-
-        .rsvp-table tr:hover {
-            background: rgba(30, 60, 114, 0.05);
-        }
-
-        .attending-yes {
-            background: #d4edda;
-            color: #155724;
-            padding: 4px 8px;
-            border-radius: 15px;
-            font-size: 0.8em;
-            font-weight: 600;
-        }
-
-        .attending-no {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 4px 8px;
-            border-radius: 15px;
-            font-size: 0.8em;
-            font-weight: 600;
-        }
-
-        .comment-row {
-            background: #f8f9fa;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-        }
-
-        .stat-number {
-            font-size: 2.5em;
-            font-weight: bold;
-            color: #1e3c72;
-        }
-
-        .stat-label {
-            color: #666;
-            font-weight: 600;
-            margin-top: 5px;
-        }
-
-        .chapter-breakdown {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .no-rsvps {
-            text-align: center;
-            color: #666;
-            padding: 60px 20px;
-            background: white;
-            border-radius: 10px;
-        }
-
-        .no-rsvps p:first-child {
-            font-size: 1.2em;
-            margin-bottom: 10px;
-        }
-
-        .control-section {
-            margin-bottom: 15px;
-        }
-
-        .control-label {
-            font-weight: 600;
-            color: #1e3c72;
-            margin-bottom: 5px;
-            display: block;
-        }
-
-        .editable-field {
-            background: white;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 8px 12px;
-            width: 100%;
-            font-size: 1em;
-            transition: all 0.3s ease;
-            cursor: text;
-        }
-
-        .editable-field:focus {
-            border-color: #1e3c72;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(30, 60, 114, 0.1);
-        }
-
-        .form-section {
-            padding: 40px;
-        }
-
-        .form-title {
-            font-size: 2.2em;
-            color: #1e3c72;
-            text-align: center;
-            margin-bottom: 30px;
-            font-weight: 600;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: #333;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 1em;
-            transition: all 0.3s ease;
-        }
-
-        .form-input:focus {
-            border-color: #1e3c72;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(30, 60, 114, 0.1);
-        }
-
-        .form-select {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 1em;
-            background: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .form-select:focus {
-            border-color: #1e3c72;
-            outline: none;
-        }
-
-        .radio-group {
-            display: flex;
-            gap: 20px;
-            margin-top: 5px;
-        }
-
-        .radio-option {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .radio-option input[type="radio"] {
-            width: 18px;
-            height: 18px;
-            accent-color: #1e3c72;
-        }
-
-        .submit-btn {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            color: white;
-            padding: 15px 40px;
-            border: none;
-            border-radius: 50px;
-            font-size: 1.1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: block;
-            margin: 30px auto 0;
-            box-shadow: 0 8px 20px rgba(30, 60, 114, 0.3);
-        }
-
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 30px rgba(30, 60, 114, 0.4);
-        }
-
-        .success-message {
-            background: #4caf50;
-            color: white;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-            margin-top: 20px;
-            display: none;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                margin: 10px;
-                border-radius: 15px;
-            }
-
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-
-            .radio-group {
-                flex-direction: column;
-                gap: 10px;
-            }
-
-            .form-section {
-                padding: 20px;
-            }
-        }
-
-        .required {
-            color: #e74c3c;
-        }
-
-        .event-info {
-            background: rgba(30, 60, 114, 0.05);
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            border-left: 4px solid #1e3c72;
-        }
-
-        .event-detail {
-            margin-bottom: 8px;
-            font-size: 1.05em;
-        }
-
-        .event-detail strong {
-            color: #1e3c72;
-        }
-
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        @keyframes slideOut {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
-        }
-
-        .password-change-section {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 10px;
-        }
-
-        .password-input-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-            align-items: center;
-        }
-
-        .password-change-btn {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.9em;
-            transition: all 0.3s ease;
-        }
-
-        .password-change-btn:hover {
-            background: #c0392b;
-        }
-
-        .logo-upload-section {
-            background: #e8f4fd;
-            border: 1px solid #b3d9f2;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        .logo-preview {
-            margin-top: 10px;
-            text-align: center;
-        }
-
-        .logo-preview img {
-            max-width: 80px;
-            max-height: 80px;
-            border-radius: 50%;
-            border: 2px solid #1e3c72;
-        }
-
-        .data-management {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-            flex-wrap: wrap;
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.9em;
-            transition: all 0.3s ease;
-        }
-
-        .btn-secondary:hover {
-            background: #5a6268;
-        }
-
-        .btn-warning {
-            background: #ffc107;
-            color: #212529;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.9em;
-            transition: all 0.3s ease;
-        }
-
-        .btn-warning:hover {
-            background: #e0a800;
-        }
-
-        .alert {
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
-        }
-
-        .alert-info {
-            background: #d1ecf1;
-            border: 1px solid #b8daff;
-            color: #0c5460;
-        }
-
-        .debug-info {
-            position: fixed;
-            bottom: 10px;
-            left: 10px;
-            background: rgba(0,0,0,0.8);
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 0.8em;
-            z-index: 1000;
-            max-width: 300px;
-        }
-    </style>
+  <title>RSVP System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .page {
+      display: none;
+    }
+    .page.active {
+      display: block;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      box-sizing: border-box;
+      margin-bottom: 10px;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-right: 10px;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .secondary-btn {
+      background-color: #6c757d;
+    }
+    .secondary-btn:hover {
+      background-color: #545b62;
+    }
+    .danger-btn {
+      background-color: #dc3545;
+    }
+    .danger-btn:hover {
+      background-color: #c82333;
+    }
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #ddd;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .stat-card {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      border-left: 4px solid #007bff;
+    }
+    .stat-number {
+      font-size: 24px;
+      font-weight: bold;
+      color: #007bff;
+    }
+    .event-info {
+      background: #e9ecef;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .event-info h2 {
+      margin-top: 0;
+      color: #495057;
+    }
+    #result {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+    .success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    .tab-buttons {
+      margin-bottom: 20px;
+    }
+    .tab-button {
+      background-color: #f8f9fa;
+      color: #495057;
+      border: 1px solid #ddd;
+      padding: 8px 16px;
+      margin-right: 5px;
+    }
+    .tab-button.active {
+      background-color: #007bff;
+      color: white;
+    }
+  </style>
 </head>
 <body>
-    <button class="admin-toggle" onclick="showAdminLogin()">🔐 Admin Login</button>
+  <div class="container">
+    <!-- Login Page -->
+    <div id="loginPage" class="page active">
+      <h1>RSVP System</h1>
+      <div class="tab-buttons">
+        <button class="tab-button active" onclick="showTab('user')">User Registration</button>
+        <button class="tab-button" onclick="showTab('admin')">Admin Login</button>
+      </div>
 
-    <!-- Debug Info -->
-    <div id="debugInfo" class="debug-info hidden">
-        <div>RSVPs: <span id="debugRSVPCount">0</span></div>
-        <div>Admin: <span id="debugAdminMode">false</span></div>
-        <div>Storage: <span id="debugStorageMethod">Memory</span></div>
+      <div id="userTab" class="tab-content">
+        <div class="event-info">
+          <h2 id="eventTitle">Education Session 2025</h2>
+          <p><strong>Date:</strong> <span id="eventDate">14th September, Sunday</span></p>
+          <p><strong>Venue:</strong> <span id="eventVenue">TBA</span></p>
+          <p><strong>Organized by:</strong> <span id="eventOrganizer">Event Committee</span></p>
+        </div>
+
+        <form id="rsvpForm">
+          <div class="form-group">
+            <input type="text" name="First_name" id="a" placeholder="First Name" required>
+          </div>
+          <div class="form-group">
+            <input type="text" name="Last_name" id="b" placeholder="Last Name" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Sub-Chapter Name</label>
+            <select class="form-select" name="subChapter" id="c" required>
+              <option value="">Select Sub-Chapter</option>
+              <option value="Doraville Male Sub-Chapter">Doraville Male Sub-Chapter</option>
+              <option value="Lilburn Male Sub-Chapter">Lilburn Male Sub-Chapter</option>
+              <option value="Lawrenceville Male Sub-Chapter">Lawrenceville Male Sub-Chapter</option>
+              <option value="MSF Male Sub-Chapter">MSF Male Sub-Chapter</option>
+              <option value="Norcross Male Sub-Chapter">Norcross Male Sub-Chapter</option>
+              <option value="Athens Male Sub-Chapter">Athens Male Sub-Chapter</option>
+              <option value="Chamblee Male Sub-Chapter">Chamblee Male Sub-Chapter</option>
+              <option value="Chamblee Female Sub-Chapter">Chamblee Female Sub-Chapter</option>
+              <option value="Lilburn Female Sub-Chapter">Lilburn Female Sub-Chapter</option>
+              <option value="Norcross Female Sub-Chapter">Norcross Female Sub-Chapter</option>
+              <option value="MSF Female Sub-Chapter">MSF Female Sub-Chapter</option>
+              <option value="Lawrenceville Female Sub-Chapter">Lawrenceville Female Sub-Chapter</option>
+              <option value="Athens Female Sub-Chapter">Athens Female Sub-Chapter</option>
+              <option value="Doraville Female Sub-Chapter">Doraville Female Sub-Chapter</option>
+              <option value="Stone Mountain Female Sub-Chapter">Stone Mountain Female Sub-Chapter</option>
+              <option value="Young Sister GA Sub-Chapter">Young Sister GA Sub-Chapter</option>
+              <option value="MUNA Youth Junior GA">MUNA Youth Junior GA</option>
+              <option value="MUNA Youth GA Sub-Chapter">MUNA Youth GA Sub-Chapter</option>
+              <option value="Madina Institute Male SC">Madina Institute Male SC</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <input type="number" name="Adult_Count" id="d" placeholder="Adult Count" min="0" required>
+          </div>
+          <div class="form-group">
+            <input type="number" name="Kids_Count" id="e" placeholder="Kids Count" min="0" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Will you attend?</label>
+            <select name="response" id="f" required>
+              <option value="">Select Response</option>
+              <option value="Yes">Yes, In Sha Allah</option>
+              <option value="No">No, Unable to attend this time</option>
+            </select>
+          </div>
+          <button type="submit">Submit RSVP</button>
+        </form>
+        <div id="result"></div>
+      </div>
+
+      <div id="adminTab" class="tab-content" style="display: none;">
+        <h2>Admin Login</h2>
+        <form id="adminLoginForm">
+          <div class="form-group">
+            <input type="password" id="adminPassword" placeholder="Admin Password" required>
+          </div>
+          <button type="submit">Login</button>
+        </form>
+        <div id="loginResult"></div>
+      </div>
     </div>
 
-    <!-- Admin Login Modal -->
-    <div id="adminLoginModal" class="modal hidden">
-        <div class="modal-content">
-            <h3>Admin Access Required</h3>
-            <p>Please enter the admin password to access event management:</p>
-            <input type="password" id="adminPassword" placeholder="Enter admin password" class="form-input" style="margin: 15px 0;">
-            <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                <button onclick="closeAdminLogin()" class="cancel-btn">Cancel</button>
-                <button onclick="verifyAdminPassword()" class="save-btn">Login</button>
-            </div>
+    <!-- Admin Dashboard -->
+    <div id="adminPage" class="page">
+      <div class="admin-header">
+        <h1>Admin Dashboard</h1>
+        <button class="danger-btn" onclick="logout()">Logout</button>
+      </div>
+
+      <div class="tab-buttons">
+        <button class="tab-button active" onclick="showAdminTab('stats')">Statistics</button>
+        <button class="tab-button" onclick="showAdminTab('settings')">Event Settings</button>
+      </div>
+
+      <div id="statsTab" class="tab-content">
+        <h2>RSVP Statistics</h2>
+        <button onclick="loadStats()" class="secondary-btn">Refresh Statistics</button>
+        <div id="statsContainer">
+          <p>Click "Refresh Statistics" to load data</p>
         </div>
+      </div>
+
+      <div id="settingsTab" class="tab-content" style="display: none;">
+        <h2>Event Settings</h2>
+        <form id="eventSettingsForm">
+          <div class="form-group">
+            <label class="form-label">Event Title</label>
+            <input type="text" id="settingsTitle" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Event Date</label>
+            <input type="text" id="settingsDate" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Venue</label>
+            <input type="text" id="settingsVenue" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Organized By</label>
+            <input type="text" id="settingsOrganizer" required>
+          </div>
+          <button type="submit">Update Event Details</button>
+        </form>
+        <div id="settingsResult"></div>
+      </div>
     </div>
+  </div>
 
-    <div class="container">
-        <div class="header">
-            <div class="muna-logo" id="logoContainer">
-                <img id="customLogo" class="custom-logo" alt="Organization Logo">
-                <div class="simple-logo" id="simpleLogo">MUNA</div>
-            </div>
-            <h1>Event RSVP Form</h1>
-            <p>Please confirm your attendance</p>
+  <script>
+    // Admin password - change this to your desired password
+    const ADMIN_PASSWORD = "admin123";
+
+    // Event data stored in memory (you can enhance this to sync with Google Sheets)
+    let eventData = {
+      title: "Education Session 2025",
+      date: "14th September, Sunday",
+      venue: "TBA",
+      organizer: "Event Committee"
+    };
+
+    // Tab switching for login page
+    function showTab(tabName) {
+      document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
+
+      if (tabName === 'user') {
+        document.querySelector('.tab-button').classList.add('active');
+        document.getElementById('userTab').style.display = 'block';
+      } else {
+        document.querySelectorAll('.tab-button')[1].classList.add('active');
+        document.getElementById('adminTab').style.display = 'block';
+      }
+    }
+
+    // Tab switching for admin dashboard
+    function showAdminTab(tabName) {
+      document.querySelectorAll('#adminPage .tab-button').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('#adminPage .tab-content').forEach(content => content.style.display = 'none');
+
+      if (tabName === 'stats') {
+        document.querySelectorAll('#adminPage .tab-button')[0].classList.add('active');
+        document.getElementById('statsTab').style.display = 'block';
+      } else {
+        document.querySelectorAll('#adminPage .tab-button')[1].classList.add('active');
+        document.getElementById('settingsTab').style.display = 'block';
+        loadEventSettings();
+      }
+    }
+
+    // Show specific page
+    function showPage(pageId) {
+      document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+      document.getElementById(pageId).classList.add('active');
+    }
+
+    // Admin login
+    document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const password = document.getElementById('adminPassword').value;
+      const resultDiv = document.getElementById('loginResult');
+
+      if (password === ADMIN_PASSWORD) {
+        showPage('adminPage');
+        resultDiv.innerHTML = '';
+      } else {
+        resultDiv.innerHTML = '<div class="error">Invalid password</div>';
+      }
+    });
+
+    // Logout
+    function logout() {
+      showPage('loginPage');
+      document.getElementById('adminPassword').value = '';
+      document.getElementById('loginResult').innerHTML = '';
+    }
+
+    // Load event settings into form
+    function loadEventSettings() {
+      document.getElementById('settingsTitle').value = eventData.title;
+      document.getElementById('settingsDate').value = eventData.date;
+      document.getElementById('settingsVenue').value = eventData.venue;
+      document.getElementById('settingsOrganizer').value = eventData.organizer;
+    }
+
+    // Update event settings
+    document.getElementById('eventSettingsForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      eventData.title = document.getElementById('settingsTitle').value;
+      eventData.date = document.getElementById('settingsDate').value;
+      eventData.venue = document.getElementById('settingsVenue').value;
+      eventData.organizer = document.getElementById('settingsOrganizer').value;
+
+      // Update the display on user page
+      document.getElementById('eventTitle').textContent = eventData.title;
+      document.getElementById('eventDate').textContent = eventData.date;
+      document.getElementById('eventVenue').textContent = eventData.venue;
+      document.getElementById('eventOrganizer').textContent = eventData.organizer;
+
+      document.getElementById('settingsResult').innerHTML = '<div class="success">Event details updated successfully!</div>';
+
+      setTimeout(() => {
+        document.getElementById('settingsResult').innerHTML = '';
+      }, 3000);
+    });
+
+    // Original RSVP form submission
+    const form = document.getElementById('rsvpForm');
+    form.addEventListener("submit", e => {
+      e.preventDefault();
+
+      const data = {
+        First_name: document.getElementById("a").value,
+        Last_name: document.getElementById("b").value,
+        Subchapter_name: document.getElementById("c").value,
+        response: document.getElementById("f").value,
+        Adult_Count: document.getElementById("d").value,
+        Kids_Count: document.getElementById("e").value
+      };
+
+      fetch("https://script.google.com/macros/s/AKfycbzE8gbxQ_fuH2XvUglXHMJy5whLD8EZ8dmK2iEeS7nzgmqeHns-RUMC_ZvegsOxG9Z8/exec", {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      })
+      .then(() => {
+        document.getElementById('result').innerHTML = '<div class="success">RSVP submitted successfully!</div>';
+        form.reset();
+      })
+      .catch(() => {
+        document.getElementById('result').innerHTML = '<div class="error">Error submitting RSVP. Please try again.</div>';
+      });
+    });
+
+    // Load statistics using JSONP to bypass CORS
+    function loadStats() {
+      document.getElementById('statsContainer').innerHTML = '<p>Loading statistics...</p>';
+
+      // Create a unique callback name
+      const callbackName = 'statsCallback_' + Date.now();
+
+      // Create the callback function
+      window[callbackName] = function(data) {
+        try {
+          if (data && data.result === 'success') {
+            displayStats(data.data);
+          } else {
+            document.getElementById('statsContainer').innerHTML =
+              '<div class="error">Error loading statistics: ' + (data.message || 'Unknown error') + '</div>';
+          }
+        } catch (err) {
+          document.getElementById('statsContainer').innerHTML =
+            '<div class="error">Error processing statistics data</div>';
+        }
+
+        // Clean up
+        if (script && script.parentNode) {
+          document.head.removeChild(script);
+        }
+        delete window[callbackName];
+      };
+
+      // Create script tag for JSONP - using the same URL as RSVP submissions
+      const script = document.createElement('script');
+      script.src = `https://script.google.com/macros/s/AKfycbzE8gbxQ_fuH2XvUglXHMJy5whLD8EZ8dmK2iEeS7nzgmqeHns-RUMC_ZvegsOxG9Z8/exec?action=getStats&callback=${callbackName}`;
+
+      // Handle script loading errors
+      script.onerror = function() {
+        document.getElementById('statsContainer').innerHTML = `
+          <div style="background: #fff3cd; padding: 15px; border-radius: 5px; border: 1px solid #ffeaa7;">
+            <h4>Statistics Loading Issue</h4>
+            <p>Unable to load live statistics. This could be due to:</p>
+            <ul>
+              <li>Google Apps Script deployment settings</li>
+              <li>Browser security restrictions</li>
+            </ul>
+            <p><strong>Solutions:</strong></p>
+            <ol>
+              <li>Make sure your Google Apps Script is deployed as a web app with "Anyone" access</li>
+              <li>Try this direct link: <a href="https://script.google.com/macros/s/AKfycbzE8gbxQ_fuH2XvUglXHMJy5whLD8EZ8dmK2iEeS7nzgmqeHns-RUMC_ZvegsOxG9Z8/exec?action=getStats" target="_blank">View Statistics</a></li>
+            </ol>
+            <p><em>Note: RSVP submissions are still working perfectly!</em></p>
+          </div>
+        `;
+
+        if (script && script.parentNode) {
+          document.head.removeChild(script);
+        }
+        delete window[callbackName];
+      };
+
+      // Add timeout
+      setTimeout(() => {
+        if (window[callbackName]) {
+          script.onerror();
+        }
+      }, 10000);
+
+      document.head.appendChild(script);
+    }
+
+    function displayStats(stats) {
+      let html = `
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3>Total Responses</h3>
+            <div class="stat-number">${stats.totalResponses}</div>
+          </div>
+          <div class="stat-card">
+            <h3>Attending (Yes)</h3>
+            <div class="stat-number" style="color: #28a745;">${stats.yesResponses}</div>
+          </div>
+          <div class="stat-card">
+            <h3>Not Attending (No)</h3>
+            <div class="stat-number" style="color: #dc3545;">${stats.noResponses}</div>
+          </div>
+          <div class="stat-card">
+            <h3>Total Adults</h3>
+            <div class="stat-number">${stats.totalAdults}</div>
+          </div>
+          <div class="stat-card">
+            <h3>Total Kids</h3>
+            <div class="stat-number">${stats.totalKids}</div>
+          </div>
         </div>
 
-        <!-- Admin Dashboard -->
-        <div class="admin-dashboard hidden" id="adminDashboard">
-            <div class="admin-header">
-                <h2>🔧 Admin Dashboard</h2>
-                <div>
-                    <button onclick="toggleDebug()" style="background: rgba(255,255,255,0.2); color: white; border: none; padding: 5px 10px; border-radius: 15px; margin-right: 10px; cursor: pointer; font-size: 0.8em;">🐛 Debug</button>
-                    <button class="logout-btn" onclick="logoutAdmin()">🚪 Logout</button>
-                </div>
-            </div>
-
-            <div class="admin-tabs">
-                <button class="tab-btn active" onclick="showTab('event-settings')">Event Settings</button>
-                <button class="tab-btn" onclick="showTab('rsvp-list')">RSVP List</button>
-                <button class="tab-btn" onclick="showTab('statistics')">Statistics</button>
-            </div>
-
-            <!-- Event Settings Tab -->
-            <div class="tab-content active" id="event-settings">
-                <h3>📝 Event Configuration</h3>
-
-                <div class="logo-upload-section">
-                    <label class="control-label">🖼️ Logo Management:</label>
-                    <div class="alert alert-info">
-                        <strong>Note:</strong> Logo is stored in memory during this session only.
-                    </div>
-                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px;">
-                        <input type="file" id="logoUpload" accept="image/*" style="display: none;" onchange="handleLogoUpload(event)">
-                        <button onclick="document.getElementById('logoUpload').click()" style="background: #1e3c72; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer;">📁 Upload Logo</button>
-                        <button onclick="resetToSimpleLogo()" style="background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer;">🔄 Reset to Simple</button>
-                        <span id="logoStatus" style="font-size: 0.9em; color: #666;">Using simple MUNA logo</span>
-                    </div>
-                    <div class="logo-preview" id="logoPreview">
-                        <!-- Logo preview will appear here -->
-                    </div>
-                </div>
-
-                <div class="control-section">
-                    <label class="control-label">Program Name:</label>
-                    <input type="text" class="editable-field" id="programName" value="Education Session & Community Gathering" placeholder="Enter program name">
-                </div>
-
-                <div class="form-row">
-                    <div class="control-section">
-                        <label class="control-label">Date:</label>
-                        <input type="text" class="editable-field" id="eventDate" value="Sunday, September 14, 2025" placeholder="Enter event date">
-                    </div>
-                    <div class="control-section">
-                        <label class="control-label">Time Slot:</label>
-                        <input type="text" class="editable-field" id="timeSlot" value="10:00 AM - 6:00 PM" placeholder="Enter time slot">
-                    </div>
-                </div>
-
-                <div class="control-section">
-                    <label class="control-label">Place:</label>
-                    <input type="text" class="editable-field" id="eventPlace" value="Masjid Salman Al Farshi Mosque" placeholder="Enter venue">
-                </div>
-
-                <div class="control-section">
-                    <label class="control-label">Organized By:</label>
-                    <input type="text" class="editable-field" id="organizedBy" value="MUNA Georgia Chapter" placeholder="Enter organizing body">
-                </div>
-
-                <div class="control-section">
-                    <label class="control-label">Admin Password Settings:</label>
-                    <div class="password-change-section">
-                        <p style="margin-bottom: 10px; color: #856404;">
-                            <strong>Current Password:</strong> <span id="currentPasswordDisplay">admin123</span>
-                        </p>
-                        <div class="password-input-group">
-                            <input type="password" class="editable-field" id="newAdminPassword" placeholder="Enter new admin password" style="flex: 1;">
-                            <button onclick="changeAdminPassword()" class="password-change-btn">🔒 Change Password</button>
-                        </div>
-                        <p style="font-size: 0.9em; color: #856404; margin-top: 8px;">
-                            ⚠️ Password must be at least 6 characters long. Remember your new password!
-                        </p>
-                    </div>
-                </div>
-
-                <button onclick="updateEventInfo()" style="background: #1e3c72; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; margin-top: 20px; font-size: 1.1em; transition: all 0.3s ease;" onmouseover="this.style.background='#2a5298'" onmouseout="this.style.background='#1e3c72'">📝 Save Event Changes</button>
-
-                <!-- Data Management Section -->
-                <div class="data-management">
-                    <h4>🗂️ Data Management</h4>
-                    <p>Manage all your form data and settings:</p>
-                    <div class="btn-group">
-                        <button onclick="exportAllData()" class="btn-secondary">📤 Export All Data</button>
-                        <button onclick="importData()" class="btn-secondary">📥 Import Data</button>
-                        <button onclick="resetAllData()" class="btn-warning">⚠️ Reset All Data</button>
-                    </div>
-                    <input type="file" id="importFile" accept=".json" style="display: none;" onchange="handleDataImport(event)">
-                </div>
-            </div>
-
-            <!-- RSVP List Tab -->
-            <div class="tab-content" id="rsvp-list">
-                <div class="rsvp-header">
-                    <h3>📋 RSVP Submissions</h3>
-                    <div class="rsvp-actions">
-                        <button onclick="exportRSVPs()" class="export-btn">📊 Export CSV</button>
-                        <button onclick="clearAllRSVPs()" class="clear-btn">🗑️ Clear All</button>
-                    </div>
-                </div>
-                <div id="rsvpTableContainer">
-                    <div class="no-rsvps">
-                        <p>📭 No RSVP submissions yet</p>
-                        <p>RSVPs will appear here once people start registering</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Statistics Tab -->
-            <div class="tab-content" id="statistics">
-                <h3>📊 Event Statistics</h3>
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-number" id="totalRSVPs">0</div>
-                        <div class="stat-label">Total RSVPs</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="attendingCount">0</div>
-                        <div class="stat-label">Attending</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="notAttendingCount">0</div>
-                        <div class="stat-label">Not Attending</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="totalAdults">0</div>
-                        <div class="stat-label">Total Adults</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="totalKids">0</div>
-                        <div class="stat-label">Total Children</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="totalPeople">0</div>
-                        <div class="stat-label">Total People</div>
-                    </div>
-                </div>
-
-                <div class="chapter-breakdown">
-                    <h4>📍 Chapter Breakdown</h4>
-                    <div id="chapterStats">
-                        <p>No data available yet</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="form-section">
-            <h2 class="form-title">RSVP Registration</h2>
-
-            <!-- Event Information Display -->
-            <div class="event-info" id="eventDisplay">
-                <div class="event-detail"><strong>Program:</strong> <span id="displayProgramName">Education Session & Community Gathering</span></div>
-                <div class="event-detail"><strong>Date:</strong> <span id="displayDate">Sunday, September 14, 2025</span></div>
-                <div class="event-detail"><strong>Time:</strong> <span id="displayTime">10:00 AM - 6:00 PM</span></div>
-                <div class="event-detail"><strong>Venue:</strong> <span id="displayPlace">Masjid Salman Al Farshi Mosque</span></div>
-                <div class="event-detail"><strong>Organized by:</strong> <span id="displayOrganizer">MUNA Georgia Chapter</span></div>
-            </div>
-
-            <form id="rsvpForm">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">First Name <span class="required">*</span></label>
-                        <input type="text" class="form-input" name="firstName" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Last Name <span class="required">*</span></label>
-                        <input type="text" class="form-input" name="lastName" required>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Sub-Chapter Name</label>
-                    <select class="form-select" name="subChapter">
-                        <option value="Doraville Male Sub-Chapter">Doraville Male Sub-Chapter</option>
-                        <option value="Lilburn Male Sub-Chapter">Lilburn Male Sub-Chapter</option>
-                        <option value="Lawrenceville Male Sub-Chapter">Lawrenceville Male Sub-Chapter</option>
-                        <option value="MSF Male Sub-Chapter">MSF Male Sub-Chapter</option>
-                        <option value="Norcross Male Sub-Chapter">Norcross Male Sub-Chapter</option>
-                        <option value="Athens Male Sub-Chapter">Athens Male Sub-Chapter</option>
-                        <option value="Chamblee Male Sub-Chapter">Chamblee Male Sub-Chapter</option>
-                        <option value="Chamblee Female Sub-Chapter">Chamblee Female Sub-Chapter</option>
-                        <option value="Lilburn Female Sub-Chapter">Lilburn Female Sub-Chapter</option>
-                        <option value="Norcross Female Sub-Chapter">Norcross Female Sub-Chapter</option>
-                        <option value="MSF Female Sub-Chapter">MSF Female Sub-Chapter</option>
-                        <option value="Lawrenceville Female Sub-Chapter">Lawrenceville Female Sub-Chapter</option>
-                        <option value="Athens Female Sub-Chapter">Athens Female Sub-Chapter</option>
-                        <option value="Doraville Female Sub-Chapter">Doraville Female Sub-Chapter</option>
-                        <option value="Stone Mountain Female Sub-Chapter">Stone Mountain Female Sub-Chapter</option>
-                        <option value="Young Sister GA Sub-Chapter">Young Sister GA Sub-Chapter</option>
-                        <option value="MUNA Youth Junior GA">MUNA Youth Junior GA</option>
-                        <option value="MUNA Youth GA Sub-Chapter">MUNA Youth GA Sub-Chapter</option>
-                        <option value="Madina Institute Male SC">Madina Institute Male SC</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Will you be attending? <span class="required">*</span></label>
-                    <div class="radio-group">
-                        <div class="radio-option">
-                            <input type="radio" id="attendingYes" name="attending" value="inshallah_yes" required>
-                            <label for="attendingYes">Yes, In Sha Allah</label>
-                        </div>
-                        <div class="radio-option">
-                            <input type="radio" id="attendingNo" name="attending" value="no" required>
-                            <label for="attendingNo">No, Cannot Attend</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">Adults Count <span class="required">*</span></label>
-                        <select class="form-select" name="headCount" required>
-                            <option value="">Select count</option>
-                            <option value="1">1 Adult</option>
-                            <option value="2">2 Adults</option>
-                            <option value="3">3 Adults</option>
-                            <option value="4">4 Adults</option>
-                            <option value="5">5 Adults</option>
-                            <option value="6+">6+ Adults</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Children Count</label>
-                        <select class="form-select" name="kidsCount">
-                            <option value="0">No Children</option>
-                            <option value="1">1 Child</option>
-                            <option value="2">2 Children</option>
-                            <option value="3">3 Children</option>
-                            <option value="4">4 Children</option>
-                            <option value="5">5 Children</option>
-                            <option value="6+">6+ Children</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Additional Comments (Optional)</label>
-                    <textarea class="form-input" name="comments" rows="3" placeholder="Any special requirements, dietary restrictions, or comments..."></textarea>
-                </div>
-
-                <button type="submit" class="submit-btn">Submit RSVP</button>
-
-                <div class="success-message" id="successMessage">
-                    ✅ Jazakallahu Khairan! Your RSVP has been submitted successfully.
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        // Global variables - Using in-memory storage for Claude.ai compatibility
-        let adminMode = false;
-        let currentLogo = 'simple';
-        let adminPassword = 'admin123';
-        let rsvpSubmissions = [];
-        let currentEventData = {
-            programName: 'Education Session & Community Gathering',
-            eventDate: 'Sunday, September 14, 2025',
-            timeSlot: '10:00 AM - 6:00 PM',
-            eventPlace: 'Masjid Salman Al Farshi Mosque',
-            organizedBy: 'MUNA Georgia Chapter'
-        };
-        let logoData = null;
-        let debugMode = false;
-
-        // Initialize all data on page load
-        function initializeData() {
-            console.log('Initializing MUNA RSVP Form with in-memory storage...');
-            
-            // Initialize displays
-            updateEventDisplay();
-            loadAndApplyLogo();
-            updateDebugInfo();
-            
-            console.log('Initialization complete');
-        }
-
-        // Debug functions
-        function toggleDebug() {
-            debugMode = !debugMode;
-            const debugInfo = document.getElementById('debugInfo');
-            if (debugMode) {
-                debugInfo.classList.remove('hidden');
-                updateDebugInfo();
-            } else {
-                debugInfo.classList.add('hidden');
-            }
-        }
-
-        function updateDebugInfo() {
-            if (!debugMode) return;
-            
-            document.getElementById('debugRSVPCount').textContent = rsvpSubmissions.length;
-            document.getElementById('debugAdminMode').textContent = adminMode;
-            document.getElementById('debugStorageMethod').textContent = 'In-Memory';
-        }
-
-        // Logo management functions
-        function loadAndApplyLogo() {
-            if (logoData && logoData.type === 'custom' && logoData.data) {
-                // Apply custom logo
-                const customLogo = document.getElementById('customLogo');
-                const simpleLogo = document.getElementById('simpleLogo');
-
-                customLogo.src = logoData.data;
-                customLogo.style.display = 'block';
-                simpleLogo.style.display = 'none';
-
-                currentLogo = 'custom';
-
-                // Update status if in admin mode
-                const logoStatus = document.getElementById('logoStatus');
-                if (logoStatus) {
-                    logoStatus.textContent = `✅ Custom logo active (${logoData.filename || 'uploaded'})`;
-                    logoStatus.style.color = '#4caf50';
-                }
-
-                updateLogoPreview(logoData.data);
-            } else {
-                // Use simple logo
-                currentLogo = 'simple';
-                const customLogo = document.getElementById('customLogo');
-                const simpleLogo = document.getElementById('simpleLogo');
-
-                customLogo.style.display = 'none';
-                simpleLogo.style.display = 'flex';
-
-                // Update status if in admin mode
-                const logoStatus = document.getElementById('logoStatus');
-                if (logoStatus) {
-                    logoStatus.textContent = 'Using simple MUNA logo';
-                    logoStatus.style.color = '#666';
-                }
-
-                updateLogoPreview(null);
-            }
-        }
-
-        function updateLogoPreview(logoSrc) {
-            const logoPreview = document.getElementById('logoPreview');
-            if (logoPreview) {
-                if (logoSrc) {
-                    logoPreview.innerHTML = `<img src="${logoSrc}" alt="Logo Preview">`;
-                } else {
-                    logoPreview.innerHTML = '<div style="width: 80px; height: 80px; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin: 0 auto;">MUNA</div>';
-                }
-            }
-        }
-
-        function handleLogoUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            // Validate file
-            if (!file.type.startsWith('image/')) {
-                showNotification('Please select a valid image file.', 'error');
-                return;
-            }
-
-            if (file.size > 5 * 1024 * 1024) {
-                showNotification('Image file size should be less than 5MB.', 'error');
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                logoData = {
-                    type: 'custom',
-                    data: e.target.result,
-                    filename: file.name,
-                    uploadDate: new Date().toISOString()
-                };
-
-                loadAndApplyLogo();
-                showNotification('✅ Logo uploaded successfully!', 'success');
-                console.log('Logo uploaded:', file.name);
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function resetToSimpleLogo() {
-            logoData = null;
-            
-            // Clear file input
-            const logoUpload = document.getElementById('logoUpload');
-            if (logoUpload) {
-                logoUpload.value = '';
-            }
-
-            loadAndApplyLogo();
-            showNotification('Logo reset to simple MUNA logo', 'success');
-            console.log('Logo reset to simple');
-        }
-
-        // Event data functions
-        function updateEventDisplay() {
-            document.getElementById('displayProgramName').textContent = currentEventData.programName;
-            document.getElementById('displayDate').textContent = currentEventData.eventDate;
-            document.getElementById('displayTime').textContent = currentEventData.timeSlot;
-            document.getElementById('displayPlace').textContent = currentEventData.eventPlace;
-            document.getElementById('displayOrganizer').textContent = currentEventData.organizedBy;
-        }
-
-        function updateEventInfo() {
-            const programName = document.getElementById('programName').value.trim();
-            const eventDate = document.getElementById('eventDate').value.trim();
-            const timeSlot = document.getElementById('timeSlot').value.trim();
-            const eventPlace = document.getElementById('eventPlace').value.trim();
-            const organizedBy = document.getElementById('organizedBy').value.trim();
-
-            // Validate required fields
-            if (!programName || !eventDate || !timeSlot || !eventPlace || !organizedBy) {
-                showNotification('Please fill in all event information fields', 'error');
-                return;
-            }
-
-            // Update event data object
-            currentEventData = {
-                programName,
-                eventDate,
-                timeSlot,
-                eventPlace,
-                organizedBy,
-                lastUpdated: new Date().toISOString()
-            };
-
-            // Update display
-            updateEventDisplay();
-
-            showNotification('✅ Event information updated!', 'success');
-            console.log('Event info updated:', currentEventData);
-        }
-
-        // Admin functions
-        function showAdminLogin() {
-            document.getElementById('adminLoginModal').classList.remove('hidden');
-            document.getElementById('adminPassword').focus();
-        }
-
-        function closeAdminLogin() {
-            document.getElementById('adminLoginModal').classList.add('hidden');
-            document.getElementById('adminPassword').value = '';
-        }
-
-        function verifyAdminPassword() {
-            const enteredPassword = document.getElementById('adminPassword').value;
-
-            if (enteredPassword === adminPassword) {
-                adminMode = true;
-                closeAdminLogin();
-                showAdminDashboard();
-                updateStatistics();
-                displayRSVPList();
-                updateDebugInfo();
-                showNotification('Welcome to Admin Dashboard!', 'success');
-                console.log('Admin login successful');
-            } else {
-                showNotification('Incorrect password. Please try again.', 'error');
-                document.getElementById('adminPassword').value = '';
-                document.getElementById('adminPassword').focus();
-            }
-        }
-
-        function showAdminDashboard() {
-            document.getElementById('adminDashboard').classList.remove('hidden');
-            const toggleBtn = document.querySelector('.admin-toggle');
-            toggleBtn.textContent = '🔒 Exit Admin';
-            toggleBtn.style.background = '#e74c3c';
-            toggleBtn.onclick = logoutAdmin;
-
-            loadEventDataToAdmin();
-            updatePasswordDisplay();
-            loadAndApplyLogo();
-        }
-
-        function loadEventDataToAdmin() {
-            document.getElementById('programName').value = currentEventData.programName || '';
-            document.getElementById('eventDate').value = currentEventData.eventDate || '';
-            document.getElementById('timeSlot').value = currentEventData.timeSlot || '';
-            document.getElementById('eventPlace').value = currentEventData.eventPlace || '';
-            document.getElementById('organizedBy').value = currentEventData.organizedBy || '';
-        }
-
-        function updatePasswordDisplay() {
-            const display = document.getElementById('currentPasswordDisplay');
-            if (display) {
-                display.textContent = adminPassword;
-            }
-        }
-
-        function logoutAdmin() {
-            adminMode = false;
-            document.getElementById('adminDashboard').classList.add('hidden');
-            const toggleBtn = document.querySelector('.admin-toggle');
-            toggleBtn.textContent = '🔐 Admin Login';
-            toggleBtn.style.background = '#1e3c72';
-            toggleBtn.onclick = showAdminLogin;
-            updateDebugInfo();
-            showNotification('Logged out successfully', 'success');
-            console.log('Admin logout');
-        }
-
-        function changeAdminPassword() {
-            const newPasswordField = document.getElementById('newAdminPassword');
-            const newPassword = newPasswordField.value.trim();
-
-            if (!newPassword) {
-                showNotification('Please enter a new password', 'error');
-                newPasswordField.focus();
-                return;
-            }
-
-            if (newPassword.length < 6) {
-                showNotification('Password must be at least 6 characters long', 'error');
-                newPasswordField.focus();
-                return;
-            }
-
-            if (newPassword === adminPassword) {
-                showNotification('New password must be different from current password', 'error');
-                newPasswordField.focus();
-                return;
-            }
-
-            // Update password
-            adminPassword = newPassword;
-            newPasswordField.value = '';
-
-            // Update the display
-            updatePasswordDisplay();
-
-            showNotification('✅ Admin password updated!', 'success');
-            console.log('Admin password changed');
-        }
-
-        // Tab management
-        function showTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-
-            document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
-
-            if (tabName === 'rsvp-list') {
-                displayRSVPList();
-            } else if (tabName === 'statistics') {
-                updateStatistics();
-            }
-        }
-
-        // RSVP management functions
-        function displayRSVPList() {
-            const container = document.getElementById('rsvpTableContainer');
-            console.log('Displaying RSVP list, count:', rsvpSubmissions.length);
-
-            if (rsvpSubmissions.length === 0) {
-                container.innerHTML = `
-                    <div class="no-rsvps">
-                        <p>📭 No RSVP submissions yet</p>
-                        <p>RSVPs will appear here once people start registering</p>
-                    </div>
-                `;
-                return;
-            }
-
-            let tableHTML = `
-                <table class="rsvp-table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Sub-Chapter</th>
-                            <th>Attending</th>
-                            <th>Adults</th>
-                            <th>Children</th>
-                            <th>Total</th>
-                            <th>Submitted</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-
-            rsvpSubmissions.forEach((rsvp, index) => {
-                const attendingClass = rsvp.attending === 'inshallah_yes' ? 'attending-yes' : 'attending-no';
-                const attendingText = rsvp.attending === 'inshallah_yes' ? 'Yes, In Sha Allah' : 'Cannot Attend';
-                const adultsCount = parseInt(rsvp.headCount || 0);
-                const kidsCount = parseInt(rsvp.kidsCount || 0);
-                const totalPeople = adultsCount + kidsCount;
-
-                tableHTML += `
-                    <tr>
-                        <td><strong>${rsvp.firstName} ${rsvp.lastName}</strong></td>
-                        <td>${rsvp.subChapter || 'Not specified'}</td>
-                        <td><span class="${attendingClass}">${attendingText}</span></td>
-                        <td>${rsvp.headCount}</td>
-                        <td>${rsvp.kidsCount}</td>
-                        <td><strong>${totalPeople}</strong></td>
-                        <td>${rsvp.submittedAt}</td>
-                        <td><button onclick="deleteRSVP(${index})" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;">🗑️</button></td>
-                    </tr>
-                `;
-
-                if (rsvp.comments && rsvp.comments.trim()) {
-                    tableHTML += `
-                        <tr class="comment-row">
-                            <td colspan="8" style="font-style:italic;color:#666;padding-left:20px;">💬 ${rsvp.comments}</td>
-                        </tr>
-                    `;
-                }
-            });
-
-            tableHTML += `
-                    </tbody>
-                </table>
-            `;
-
-            container.innerHTML = tableHTML;
-        }
-
-        function deleteRSVP(index) {
-            if (confirm('Are you sure you want to delete this RSVP?')) {
-                console.log('Deleting RSVP at index:', index);
-                rsvpSubmissions.splice(index, 1);
-                displayRSVPList();
-                updateStatistics();
-                updateDebugInfo();
-                showNotification('RSVP deleted successfully');
-            }
-        }
-
-        function clearAllRSVPs() {
-            if (confirm('Are you sure you want to clear ALL RSVP submissions? This cannot be undone.')) {
-                console.log('Clearing all RSVPs, previous count:', rsvpSubmissions.length);
-                rsvpSubmissions = [];
-                displayRSVPList();
-                updateStatistics();
-                updateDebugInfo();
-                showNotification('All RSVPs cleared');
-            }
-        }
-
-        function exportRSVPs() {
-            if (rsvpSubmissions.length === 0) {
-                showNotification('No RSVPs to export', 'error');
-                return;
-            }
-
-            let csv = 'First Name,Last Name,Sub-Chapter,Attending,Adults,Children,Total People,Comments,Submitted At\n';
-
-            rsvpSubmissions.forEach(rsvp => {
-                const adultsCount = parseInt(rsvp.headCount || 0);
-                const kidsCount = parseInt(rsvp.kidsCount || 0);
-                const totalPeople = adultsCount + kidsCount;
-                const attendingText = rsvp.attending === 'inshallah_yes' ? 'Yes In Sha Allah' : 'Cannot Attend';
-                csv += `"${rsvp.firstName}","${rsvp.lastName}","${rsvp.subChapter || ''}","${attendingText}","${rsvp.headCount}","${rsvp.kidsCount}","${totalPeople}","${rsvp.comments || ''}","${rsvp.submittedAt}"\n`;
-            });
-
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `MUNA_RSVP_Export_${new Date().toISOString().split('T')[0]}.csv`;
-            a.click();
-            window.URL.revokeObjectURL(url);
-
-            showNotification('RSVP data exported successfully!');
-        }
-
-        // Statistics
-        function updateStatistics() {
-            console.log('Updating statistics, RSVP count:', rsvpSubmissions.length);
-            
-            const totalRSVPs = rsvpSubmissions.length;
-            const attendingRSVPs = rsvpSubmissions.filter(r => r.attending === 'inshallah_yes');
-            const notAttendingRSVPs = rsvpSubmissions.filter(r => r.attending === 'no');
-            
-            const attendingCount = attendingRSVPs.length;
-            const notAttendingCount = notAttendingRSVPs.length;
-
-            let totalAdults = 0;
-            let totalKids = 0;
-            let chapterCounts = {};
-
-            rsvpSubmissions.forEach(rsvp => {
-                if (rsvp.attending === 'inshallah_yes') {
-                    const adults = parseInt(rsvp.headCount || 0);
-                    const kids = parseInt(rsvp.kidsCount || 0);
-                    
-                    totalAdults += adults;
-                    totalKids += kids;
-                    
-                    console.log(`RSVP ${rsvp.firstName}: ${adults} adults, ${kids} kids`);
-                }
-
-                const chapter = rsvp.subChapter || 'Not specified';
-                chapterCounts[chapter] = (chapterCounts[chapter] || 0) + 1;
-            });
-
-            const totalPeople = totalAdults + totalKids;
-
-            console.log(`Statistics: Total RSVPs: ${totalRSVPs}, Attending: ${attendingCount}, Adults: ${totalAdults}, Kids: ${totalKids}, Total People: ${totalPeople}`);
-
-            // Update DOM elements
-            document.getElementById('totalRSVPs').textContent = totalRSVPs;
-            document.getElementById('attendingCount').textContent = attendingCount;
-            document.getElementById('notAttendingCount').textContent = notAttendingCount;
-            document.getElementById('totalAdults').textContent = totalAdults;
-            document.getElementById('totalKids').textContent = totalKids;
-            document.getElementById('totalPeople').textContent = totalPeople;
-
-            // Update chapter breakdown
-            const chapterStats = document.getElementById('chapterStats');
-            if (Object.keys(chapterCounts).length === 0) {
-                chapterStats.innerHTML = '<p>No data available yet</p>';
-            } else {
-                let chapterHTML = '';
-                Object.entries(chapterCounts).forEach(([chapter, count]) => {
-                    chapterHTML += `<div style="display: flex; justify-content: space-between; margin-bottom: 8px;"><span>${chapter}:</span><strong>${count} RSVPs</strong></div>`;
-                });
-                chapterStats.innerHTML = chapterHTML;
-            }
-        }
-
-        // Data management functions
-        function exportAllData() {
-            const allData = {
-                eventData: currentEventData,
-                rsvpData: rsvpSubmissions,
-                logoData: logoData,
-                adminPassword: adminPassword,
-                exportDate: new Date().toISOString(),
-                version: '1.0'
-            };
-
-            const dataStr = JSON.stringify(allData, null, 2);
-            const dataBlob = new Blob([dataStr], {type: 'application/json'});
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `MUNA_Complete_Backup_${new Date().toISOString().split('T')[0]}.json`;
-            link.click();
-            URL.revokeObjectURL(url);
-
-            showNotification('✅ Complete data backup exported successfully!');
-        }
-
-        function importData() {
-            document.getElementById('importFile').click();
-        }
-
-        function handleDataImport(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            if (!file.name.endsWith('.json')) {
-                showNotification('Please select a valid JSON file', 'error');
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const importedData = JSON.parse(e.target.result);
-
-                    if (confirm('This will replace all current data. Are you sure you want to continue?')) {
-                        // Import event data
-                        if (importedData.eventData) {
-                            currentEventData = importedData.eventData;
-                            updateEventDisplay();
-                            loadEventDataToAdmin();
-                        }
-
-                        // Import RSVP data
-                        if (importedData.rsvpData) {
-                            rsvpSubmissions = importedData.rsvpData;
-                        }
-
-                        // Import logo data
-                        if (importedData.logoData) {
-                            logoData = importedData.logoData;
-                            loadAndApplyLogo();
-                        }
-
-                        // Import admin password
-                        if (importedData.adminPassword) {
-                            adminPassword = importedData.adminPassword;
-                            updatePasswordDisplay();
-                        }
-
-                        displayRSVPList();
-                        updateStatistics();
-                        updateDebugInfo();
-                        showNotification('✅ All data imported successfully!');
-                    }
-                } catch (error) {
-                    showNotification('Error importing data: Invalid file format', 'error');
-                    console.error('Import error:', error);
-                }
-            };
-            reader.readAsText(file);
-            event.target.value = '';
-        }
-
-        function resetAllData() {
-            if (confirm('⚠️ This will delete ALL data including events, RSVPs, logo, and reset password. Are you absolutely sure?')) {
-                if (confirm('This action cannot be undone. Click OK to proceed.')) {
-                    console.log('Resetting all data to defaults');
-                    
-                    // Reset to defaults
-                    currentEventData = {
-                        programName: 'Education Session & Community Gathering',
-                        eventDate: 'Sunday, September 14, 2025',
-                        timeSlot: '10:00 AM - 6:00 PM',
-                        eventPlace: 'Masjid Salman Al Farshi Mosque',
-                        organizedBy: 'MUNA Georgia Chapter'
-                    };
-                    adminPassword = 'admin123';
-                    rsvpSubmissions = [];
-                    logoData = null;
-                    currentLogo = 'simple';
-
-                    // Update displays
-                    updateEventDisplay();
-                    loadEventDataToAdmin();
-                    updatePasswordDisplay();
-                    loadAndApplyLogo();
-                    displayRSVPList();
-                    updateStatistics();
-                    updateDebugInfo();
-
-                    showNotification('⚠️ All data has been reset to defaults');
-                }
-            }
-        }
-
-        // Notification function
-        function showNotification(message, type = 'success') {
-            const notification = document.createElement('div');
-            const bgColor = type === 'error' ? '#e74c3c' : '#4caf50';
-
-            notification.style.cssText = `
-                position: fixed;
-                top: 80px;
-                right: 20px;
-                background: ${bgColor};
-                color: white;
-                padding: 12px 20px;
-                border-radius: 8px;
-                z-index: 1000;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-                animation: slideIn 0.3s ease-out;
-                max-width: 300px;
-            `;
-            notification.textContent = message;
-
-            document.body.appendChild(notification);
-
-            setTimeout(() => {
-                notification.style.animation = 'slideOut 0.3s ease-out forwards';
-                setTimeout(() => {
-                    if (document.body.contains(notification)) {
-                        document.body.removeChild(notification);
-                    }
-                }, 300);
-            }, 4000);
-        }
-
-        // Event Listeners
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded, initializing...');
-            
-            // Initialize all data
-            initializeData();
-
-            // Handle form submission
-            document.getElementById('rsvpForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                console.log('Form submitted');
-
-                const formData = new FormData(this);
-                const data = {};
-
-                for (let [key, value] of formData.entries()) {
-                    data[key] = value;
-                }
-
-                data.submittedAt = new Date().toLocaleString();
-                data.id = Date.now(); // Add unique ID
-                
-                console.log('New RSVP data:', data);
-                
-                rsvpSubmissions.push(data);
-                console.log('Total RSVPs after submission:', rsvpSubmissions.length);
-
-                // Show success message
-                document.getElementById('successMessage').style.display = 'block';
-                document.getElementById('successMessage').scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'center'
-                });
-
-                // Reset form after delay
-                setTimeout(() => {
-                    this.reset();
-                    document.getElementById('successMessage').style.display = 'none';
-                }, 3000);
-
-                // Update admin dashboard if active
-                if (adminMode) {
-                    updateStatistics();
-                    displayRSVPList();
-                }
-
-                updateDebugInfo();
-                showNotification('RSVP submitted successfully!');
-            });
-
-            // Keyboard shortcuts
-            document.getElementById('adminPassword').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    verifyAdminPassword();
-                }
-            });
-
-            document.getElementById('newAdminPassword').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    changeAdminPassword();
-                }
-            });
-
-            // Close modal on background click
-            document.getElementById('adminLoginModal').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeAdminLogin();
-                }
-            });
-
-            console.log('MUNA RSVP Form initialized with in-memory storage');
-        });
-
-        // Additional utility functions for better user experience
-        function handleFormValidation() {
-            const form = document.getElementById('rsvpForm');
-            const inputs = form.querySelectorAll('input[required], select[required]');
-            
-            inputs.forEach(input => {
-                input.addEventListener('blur', function() {
-                    if (!this.value.trim()) {
-                        this.style.borderColor = '#e74c3c';
-                    } else {
-                        this.style.borderColor = '#e0e0e0';
-                    }
-                });
-
-                input.addEventListener('input', function() {
-                    if (this.value.trim()) {
-                        this.style.borderColor = '#4caf50';
-                    }
-                });
-            });
-        }
-
-        // Initialize form validation when DOM is ready
-        document.addEventListener('DOMContentLoaded', function() {
-            handleFormValidation();
-        });
-
-        // Add some visual feedback for form interactions
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add hover effects to buttons
-            const buttons = document.querySelectorAll('button');
-            buttons.forEach(button => {
-                button.addEventListener('mouseenter', function() {
-                    this.style.transform = 'translateY(-1px)';
-                });
-                
-                button.addEventListener('mouseleave', function() {
-                    this.style.transform = 'translateY(0)';
-                });
-            });
-
-            // Add focus effects to form inputs
-            const formInputs = document.querySelectorAll('.form-input, .form-select, .editable-field');
-            formInputs.forEach(input => {
-                input.addEventListener('focus', function() {
-                    this.style.transform = 'scale(1.02)';
-                });
-                
-                input.addEventListener('blur', function() {
-                    this.style.transform = 'scale(1)';
-                });
-            });
-        });
-
-        // Test function to add sample data (for testing purposes)
-        function addSampleRSVP() {
-            if (!adminMode) {
-                showNotification('Admin access required', 'error');
-                return;
-            }
-
-            const sampleRSVP = {
-                firstName: 'Ahmed',
-                lastName: 'Hassan',
-                subChapter: 'Norcross Male Sub-Chapter',
-                attending: 'inshallah_yes',
-                headCount: '2',
-                kidsCount: '1',
-                comments: 'Looking forward to the event!',
-                submittedAt: new Date().toLocaleString(),
-                id: Date.now()
-            };
-
-            rsvpSubmissions.push(sampleRSVP);
-            console.log('Sample RSVP added:', sampleRSVP);
-            
-            updateStatistics();
-            displayRSVPList();
-            updateDebugInfo();
-            showNotification('Sample RSVP added for testing');
-        }
-
-        // Add keyboard shortcut for sample data (Ctrl+Shift+S)
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && e.shiftKey && e.key === 'S' && adminMode) {
-                e.preventDefault();
-                addSampleRSVP();
-            }
-        });
-
-        console.log('MUNA RSVP Form script loaded successfully');
-    </script>
+        <h3 style="margin-top: 30px;">Sub-Chapter Breakdown</h3>
+        <div class="stats-grid">
+      `;
+
+      Object.entries(stats.subchapterStats).forEach(([subchapter, data]) => {
+        html += `
+          <div class="stat-card">
+            <h4>${subchapter}</h4>
+            <p><strong>Yes:</strong> ${data.yes} | <strong>No:</strong> ${data.no}</p>
+            <p><strong>Adults:</strong> ${data.adults} | <strong>Kids:</strong> ${data.kids}</p>
+            <p><strong>Total People:</strong> ${data.adults + data.kids}</p>
+          </div>
+        `;
+      });
+
+      html += '</div>';
+      document.getElementById('statsContainer').innerHTML = html;
+    }
+
+    // Initialize with current event data
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('eventTitle').textContent = eventData.title;
+      document.getElementById('eventDate').textContent = eventData.date;
+      document.getElementById('eventVenue').textContent = eventData.venue;
+      document.getElementById('eventOrganizer').textContent = eventData.organizer;
+    });
+  </script>
 </body>
 </html>
