@@ -200,7 +200,7 @@
             <input type="number" name="Adult_Count" id="d" placeholder="Adult Count" min="0" required>
           </div>
           <div class="form-group">
-            <input type="number" name="Kids_Count" id="e" placeholder="Kids Count" min="0" required>
+            <input type="number" name="Kids_Count" id="e" placeholder="Kids Count (under 5 years)" min="0" required>
           </div>
           <div class="form-group">
             <label class="form-label">Will you attend?</label>
@@ -218,8 +218,8 @@
       <div id="adminTab" class="tab-content" style="display: none;">
         <h2>Admin Login</h2>
         <div class="session-info">
-          <strong>Session Management:</strong> Your admin session will persist even after page reloads. 
-          You can safely refresh the page or navigate back to the admin dashboard.
+          <strong>Session Management:</strong> Admin session will persist even after page reloads. 
+          Can safely refresh the page or navigate back to the admin dashboard.
         </div>
         <form id="adminLoginForm">
           <div class="form-group">
@@ -514,7 +514,7 @@
         body: JSON.stringify(data)
       })
       .then(() => {
-        document.getElementById('result').innerHTML = '<div class="success">RSVP submitted successfully!</div>';
+        document.getElementById('result').innerHTML = '<div class="success">JZK RSVP submitted successfully!</div>';
         form.reset();
       })
       .catch(() => {
