@@ -503,13 +503,14 @@
       e.preventDefault();
 
       const data = {
-        First_name: document.getElementById("a").value,
-        Last_name: document.getElementById("b").value,
-        Subchapter_name: document.getElementById("c").value,
-        response: document.getElementById("f").value,
-        Adult_Count: document.getElementById("d").value,
-        Kids_Count: document.getElementById("e").value
-      };
+  First_name: document.getElementById("a").value,
+  Last_name: document.getElementById("b").value,
+  Email: document.getElementById("g").value,  // ← Already added
+  Subchapter_name: document.getElementById("c").value,
+  response: document.getElementById("f").value,
+  Adult_Count: document.getElementById("d").value,
+  Kids_Count: document.getElementById("e").value
+};
 
       fetch("https://script.google.com/macros/s/AKfycbyeWZPQzNdOxEqI5Q5UlfLaXgMHemrrIk-ZM15H46i5Br8WfoA_XNyqtnJkJMQYJpY/exec", {
         method: "POST",
