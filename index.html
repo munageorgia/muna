@@ -536,16 +536,19 @@
 
       // Create the callback function
       window[callbackName] = function(data) {
+        console.log('Statistics callback received:', data);
         try {
           if (data && data.result === 'success') {
             displayStats(data.data);
           } else {
+            console.error('Statistics error:', data.message);
             document.getElementById('statsContainer').innerHTML =
               '<div class="error">Error loading statistics: ' + (data.message || 'Unknown error') + '</div>';
           }
         } catch (err) {
+          console.error('Error processing statistics data:', err);
           document.getElementById('statsContainer').innerHTML =
-            '<div class="error">Error processing statistics data</div>';
+            '<div class="error">Error processing statistics data: ' + err.message + '</div>';
         }
 
         // Clean up
@@ -559,8 +562,11 @@
       const script = document.createElement('script');
       script.src = `https://script.google.com/macros/s/AKfycbznPUmA2y2UDuuSWlhuhSxXKhZxUqKw5IX1TWHApJVuLmSk7_igscCvCh0eaRu4Fthk/exec?action=getStats&callback=${callbackName}`;
 
+      console.log('Loading statistics from:', script.src);
+
       // Handle script loading errors
       script.onerror = function() {
+        console.error('Script failed to load');
         document.getElementById('statsContainer').innerHTML = `
           <div style="background: #fff3cd; padding: 15px; border-radius: 5px; border: 1px solid #ffeaa7;">
             <h4>Statistics Loading Issue</h4>
@@ -587,6 +593,7 @@
       // Add timeout
       setTimeout(() => {
         if (window[callbackName]) {
+          console.warn('Statistics request timed out');
           script.onerror();
         }
       }, 10000);
