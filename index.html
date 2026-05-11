@@ -158,10 +158,10 @@
 
       <div id="userTab" class="tab-content">
         <div class="event-info">
-          <h2 id="eventTitle">16th Annual Picnic</h2>
-          <p><strong>Date:</strong> <span id="eventDate">Saturday- July 11, 2026 10:00 AM</span></p>
-          <p><strong>Venue:</strong> <span id="eventVenue">5000 N Browning Bridge Rd, Gainesville, GA 30506 | GPS Coordinates
-N 34.3876220 | W -83.7464620 | Registration fee: $20 Per Adult, $40 Per Family (limit 4) Above 4 members extra $10 Per adult | Zelle: 404 789 8096</span></p>
+          <h2 id="eventTitle">Annual Picnic 2026</h2>
+          <p><strong>Date:</strong> <span id="eventDate">Saturday - July 11, 2026 10:00 AM</span></p>
+          <p><strong>Venue:</strong> <span id="eventVenue">5000 N Browning Bridge Rd, Gainesville, GA 30506 | GPS Coordinates: N 34.3876220 | W -83.7464620</span></p>
+          <p><strong>Event Details:</strong> <span id="eventDetails">Registration fee: $20 Per Adult, $40 Per Family (limit 4). Above 4 members extra $10 Per adult | Zelle: 404 789 8096 | Kids under 5 is free</span></p>
           <p><strong>Organized by:</strong> <span id="eventOrganizer">MUNA GEORGIA</span></p>
         </div>
 
@@ -281,6 +281,10 @@ N 34.3876220 | W -83.7464620 | Registration fee: $20 Per Adult, $40 Per Family (
             <input type="text" id="settingsVenue" required>
           </div>
           <div class="form-group">
+            <label class="form-label">Event Details</label>
+            <input type="text" id="settingsDetails" required>
+          </div>
+          <div class="form-group">
             <label class="form-label">Organized By</label>
             <input type="text" id="settingsOrganizer" required>
           </div>
@@ -311,9 +315,10 @@ N 34.3876220 | W -83.7464620 | Registration fee: $20 Per Adult, $40 Per Family (
 
     // Event data stored in memory - FIXED: Changed organizer to match HTML
     let eventData = {
-      title: "16th Annual Picnic",
-      date: "Saturday- July 11, 2026 10:00 AM",
-      venue: "5000 N Browning Bridge Rd, Gainesville, GA 30506 | GPS Coordinates: N 34.3876220 | W -83.7464620 | Registration fee: $20 Per Adult, $40 Per Family (limit 4) Above 4 members extra $10 Per adult | Zelle: 404 789 8096",
+      title: "Annual Picnic 2026",
+      date: "Saturday - July 11, 2026 10:00 AM",
+      venue: "5000 N Browning Bridge Rd, Gainesville, GA 30506 | GPS Coordinates: N 34.3876220 | W -83.7464620",
+      details: "Registration fee: $20 Per Adult, $40 Per Family (limit 4). Above 4 members extra $10 Per adult | Zelle: 404 789 8096 | Kids under 5 is free",
       organizer: "MUNA GEORGIA"
     };
 
@@ -465,6 +470,7 @@ N 34.3876220 | W -83.7464620 | Registration fee: $20 Per Adult, $40 Per Family (
       document.getElementById('settingsTitle').value = eventData.title;
       document.getElementById('settingsDate').value = eventData.date;
       document.getElementById('settingsVenue').value = eventData.venue;
+      document.getElementById('settingsDetails').value = eventData.details;
       document.getElementById('settingsOrganizer').value = eventData.organizer;
     }
 
@@ -475,6 +481,7 @@ N 34.3876220 | W -83.7464620 | Registration fee: $20 Per Adult, $40 Per Family (
       eventData.title = document.getElementById('settingsTitle').value;
       eventData.date = document.getElementById('settingsDate').value;
       eventData.venue = document.getElementById('settingsVenue').value;
+      eventData.details = document.getElementById('settingsDetails').value;
       eventData.organizer = document.getElementById('settingsOrganizer').value;
 
       // Save updated data to session immediately
@@ -495,6 +502,7 @@ N 34.3876220 | W -83.7464620 | Registration fee: $20 Per Adult, $40 Per Family (
       document.getElementById('eventTitle').textContent = eventData.title;
       document.getElementById('eventDate').textContent = eventData.date;
       document.getElementById('eventVenue').textContent = eventData.venue;
+      document.getElementById('eventDetails').textContent = eventData.details;
       document.getElementById('eventOrganizer').textContent = eventData.organizer;
     }
 
