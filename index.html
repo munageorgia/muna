@@ -512,7 +512,7 @@
   Kids_Count: document.getElementById("e").value
 };
 
-      fetch("https://script.google.com/macros/s/AKfycbyeWZPQzNdOxEqI5Q5UlfLaXgMHemrrIk-ZM15H46i5Br8WfoA_XNyqtnJkJMQYJpY/exec", {
+      fetch("https://script.google.com/macros/s/AKfycbznPUmA2y2UDuuSWlhuhSxXKhZxUqKw5IX1TWHApJVuLmSk7_igscCvCh0eaRu4Fthk/exec", {
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
@@ -557,7 +557,7 @@
 
       // Create script tag for JSONP - using the same URL as RSVP submissions
       const script = document.createElement('script');
-      script.src = `https://script.google.com/macros/s/AKfycbyeWZPQzNdOxEqI5Q5UlfLaXgMHemrrIk-ZM15H46i5Br8WfoA_XNyqtnJkJMQYJpY/exec=${callbackName}`;
+      script.src = `https://script.google.com/macros/s/AKfycbznPUmA2y2UDuuSWlhuhSxXKhZxUqKw5IX1TWHApJVuLmSk7_igscCvCh0eaRu4Fthk/exec=${callbackName}`;
 
       // Handle script loading errors
       script.onerror = function() {
