@@ -557,7 +557,7 @@
 
       // Create script tag for JSONP - using the same URL as RSVP submissions
       const script = document.createElement('script');
-      script.src = `https://script.google.com/macros/s/AKfycbznPUmA2y2UDuuSWlhuhSxXKhZxUqKw5IX1TWHApJVuLmSk7_igscCvCh0eaRu4Fthk/exec=${callbackName}`;
+      script.src = `https://script.google.com/macros/s/AKfycbznPUmA2y2UDuuSWlhuhSxXKhZxUqKw5IX1TWHApJVuLmSk7_igscCvCh0eaRu4Fthk/exec?action=getStats&callback=${callbackName}`;
 
       // Handle script loading errors
       script.onerror = function() {
@@ -572,7 +572,7 @@
             <p><strong>Solutions:</strong></p>
             <ol>
               <li>Make sure your Google Apps Script is deployed as a web app with "Anyone" access</li>
-              <li>Try this direct link: <a href="https://script.google.com/macros/s/AKfycbzE8gbxQ_fuH2XvUglXHMJy5whLD8EZ8dmK2iEeS7nzgmqeHns-RUMC_ZvegsOxG9Z8/exec?action=getStats" target="_blank">View Statistics</a></li>
+              <li>Try this direct link: <a href="https://script.google.com/macros/s/AKfycbznPUmA2y2UDuuSWlhuhSxXKhZxUqKw5IX1TWHApJVuLmSk7_igscCvCh0eaRu4Fthk/exec?action=getStats" target="_blank">View Statistics</a></li>
             </ol>
             <p><em>Note: RSVP submissions are still working perfectly!</em></p>
           </div>
