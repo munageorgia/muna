@@ -313,14 +313,17 @@
       sessionDuration: 24 * 60 * 60 * 1000 // 24 hours in milliseconds
     };
 
-    // Event data stored in memory - FIXED: Changed organizer to match HTML
-    let eventData = {
+    const DEFAULT_EVENT_DATA = {
       title: "Annual Picnic 2026",
       date: "Saturday - July 11, 2026 10:00 AM",
-      venue: "5000 N Browning Bridge Rd, Gainesville, GA 30506 | GPS Coordinates: N 34.3876220 | W -83.7464620",
+      venue: "Red Top Mountain State Park – Group Shelter #2\n50 Park Marina Rd, Acworth, GA 30102\nGPS: 34.150456, -84.707451",
       details: "Registration fee: $20 Per Adult, $40 Per Family (limit 4). Above 4 members in Family additional $10 Per adult, Kids under 5 is free | Zelle: 404 789 8096 ",
       organizer: "MUNA GEORGIA"
     };
+    const LEGACY_EVENT_VENUE = "5000 N Browning Bridge Rd, Gainesville, GA 30506 | GPS Coordinates: N 34.3876220 | W -83.7464620";
+
+    // Event data stored in memory
+    let eventData = { ...DEFAULT_EVENT_DATA };
 
     // Save session state to window.name
     function saveSession() {
@@ -357,7 +360,10 @@
             }
           }
           if (sessionData.eventData) {
-            eventData = sessionData.eventData;
+            eventData = { ...DEFAULT_EVENT_DATA, ...sessionData.eventData };
+            if (eventData.venue === LEGACY_EVENT_VENUE) {
+              eventData.venue = DEFAULT_EVENT_DATA.venue;
+            }
           }
         }
       } catch (e) {
@@ -474,6 +480,10 @@
       document.getElementById('settingsOrganizer').value = eventData.organizer;
     }
 
+    function formatVenue(venue) {
+      return (venue || '').replace(/\n/g, '<br>');
+    }
+
     // Update event settings
     document.getElementById('eventSettingsForm').addEventListener('submit', function(e) {
       e.preventDefault();
@@ -501,7 +511,7 @@
     function updateEventDisplay() {
       document.getElementById('eventTitle').textContent = eventData.title;
       document.getElementById('eventDate').textContent = eventData.date;
-      document.getElementById('eventVenue').textContent = eventData.venue;
+      document.getElementById('eventVenue').innerHTML = formatVenue(eventData.venue);
       document.getElementById('eventDetails').textContent = eventData.details;
       document.getElementById('eventOrganizer').textContent = eventData.organizer;
     }
